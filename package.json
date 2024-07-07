@@ -2,7 +2,7 @@
   "name": "lendslog-api",
   "version": "0.0.1",
   "description": "handle your lend money in easy way",
-  "author": "sachinelavarasan",
+  "author": "janani811",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
