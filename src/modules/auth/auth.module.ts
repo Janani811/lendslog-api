@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { UserRepository } from 'src/database/repositories/User.repository';
 import { DB } from 'src/database/database.constants';
 import { DatabaseModule } from 'src/database/database.module';
+import { TwilioService } from './twilio.service';
 
 @Global()
 @Module({
@@ -20,7 +21,7 @@ import { DatabaseModule } from 'src/database/database.module';
     PassportModule,
   ],
   controllers: [AuthController],
-  providers: [JwtService, AuthService, AuthMiddleware],
+  providers: [JwtService, AuthService, AuthMiddleware, TwilioService],
   exports: [JwtService, AuthService, AuthMiddleware],
 })
 export class AuthModule implements NestModule {
@@ -30,6 +31,8 @@ export class AuthModule implements NestModule {
       .exclude(
         { path: 'auth/login', method: RequestMethod.POST },
         { path: 'auth/signup', method: RequestMethod.POST },
+        { path: 'auth/send-otp', method: RequestMethod.POST },
+        { path: 'auth/verify-otp', method: RequestMethod.POST },
       )
       .forRoutes(AuthController);
   }

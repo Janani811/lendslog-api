@@ -10,8 +10,10 @@ import * as bcrypt from 'bcrypt';
 
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { SignInDto, SignUpDto, UpdateUserDto } from './dto/auth.dto';
+import { SignInDto, SignUpDto } from './dto/auth.dto';
 import { UserRepository } from 'src/database/repositories/User.repository';
+import { TwilioService } from './twilio.service';
+import { users } from 'src/database/schemas/schema';
 
 
 @Injectable()
@@ -20,6 +22,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private usersRepository: UserRepository,
+    private twilioService: TwilioService,
   ) {}
 
   async fetchProfile(id: number) {
@@ -43,14 +46,14 @@ export class AuthService {
     const existUser = await this.usersRepository.getOne({ email: dto.email });
 
     if (existUser) {
-      throw new HttpException('user email already exists', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Your email already exists', HttpStatus.BAD_REQUEST);
     }
 
     try {
       const salt = await bcrypt.genSalt(10);
       const hashPass = await bcrypt.hash(dto.password, 10);
       await this.usersRepository.createUser({
-        us_name: dto.name,
+        // us_name: dto.name,
         us_email: dto.email,
         us_password: hashPass,
         us_password_salt: salt,
@@ -61,7 +64,7 @@ export class AuthService {
   }
 
   async login(dto: SignInDto) {
-    let user = await this.usersRepository.getOne({ email: dto.email });
+    const user = await this.usersRepository.getOne({ email: dto.email });
 
     if (!user) {
       throw new ForbiddenException('User not found');
@@ -88,6 +91,26 @@ export class AuthService {
       );
       return token;
     } catch (e) {
+      throw new ForbiddenException('Authentication failed');
+    }
+  }
+
+  async sendVerificationOTP(phoneNumber: string): Promise<string> {
+    try {
+      const { response } = await this.twilioService.sendOtp(phoneNumber)
+      console.log(response)
+      return response;
+    } catch (e) {
+      throw new ForbiddenException('Authentication failed');
+    }
+  }
+  async verifyOTP(phone: string,code: string): Promise<string> {
+    try {
+      const { response } = await this.twilioService.verifyOtp(phone,code)
+      console.log(response)
+      return response;
+    } catch (e) {
+      console.log(e)
       throw new ForbiddenException('Authentication failed');
     }
   }
