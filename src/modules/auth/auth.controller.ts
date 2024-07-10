@@ -59,7 +59,11 @@ export class AuthController {
       const response: any = await this.authService.sendVerificationOTP(
         dto.phone,
       );
-      return res.json({ status: 200, message: 'Signed In Successfully' });
+      console.log(response);
+      return res.json({
+        status: 200,
+        message: 'Your OTP has been sent successfully',
+      });
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }
@@ -71,8 +75,11 @@ export class AuthController {
         dto.phone,
         dto.code,
       );
+      if (response && !response.valid) {
+        return res.status(403).json({ error: 'Invalid OTP' });
+      }
       console.log(response);
-      return res.json({ status: 200, message: 'Signed In Successfully' });
+      return res.json({ status: 200, message: 'OTP verified successfully' });
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }

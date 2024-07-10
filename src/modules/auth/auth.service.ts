@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { SignInDto, SignUpDto } from './dto/auth.dto';
 import { UserRepository } from 'src/database/repositories/User.repository';
 import { TwilioService } from './twilio.service';
-import { users } from 'src/database/schemas/schema';
+// import { users } from 'src/database/schemas/schema';
 
 
 @Injectable()
@@ -53,10 +53,11 @@ export class AuthService {
       const salt = await bcrypt.genSalt(10);
       const hashPass = await bcrypt.hash(dto.password, 10);
       await this.usersRepository.createUser({
-        // us_name: dto.name,
+        us_name: dto.name,
         us_email: dto.email,
         us_password: hashPass,
         us_password_salt: salt,
+        us_phone_no: dto.phone
       });
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
@@ -98,20 +99,17 @@ export class AuthService {
   async sendVerificationOTP(phoneNumber: string): Promise<string> {
     try {
       const { response } = await this.twilioService.sendOtp(phoneNumber)
-      console.log(response)
       return response;
     } catch (e) {
-      throw new ForbiddenException('Authentication failed');
+      throw new ForbiddenException('Failed to send OTP');
     }
   }
   async verifyOTP(phone: string,code: string): Promise<string> {
     try {
       const { response } = await this.twilioService.verifyOtp(phone,code)
-      console.log(response)
       return response;
     } catch (e) {
-      console.log(e)
-      throw new ForbiddenException('Authentication failed');
+      throw new ForbiddenException('OTP verification failed');
     }
   }
 
