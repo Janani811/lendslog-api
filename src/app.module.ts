@@ -12,7 +12,7 @@ import { TwilioService } from './modules/auth/twilio.service';
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     CommonModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, TwilioService],

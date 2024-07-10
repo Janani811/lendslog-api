@@ -14,7 +14,7 @@ if (configService.get('NODE_ENV') == 'production') {
     host: configService.get('DB_HOST'),
     user: configService.get('DB_USER'),
     database: configService.get('DB_NAME'),
-    password: configService.get('DB_PASSWORD') ,
+    password: configService.get('DB_PASSWORD'),
   };
 } else if (
   configService.get('NODE_ENV') == 'development' ||

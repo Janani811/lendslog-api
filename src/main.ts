@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { json, urlencoded } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
@@ -18,8 +17,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(+process.env.PORT || 3000,()=>{
-    console.log('Server is listening on port: '+ process.env.PORT)
+  await app.listen(+process.env.PORT || 3000, () => {
+    console.log('Server is listening on port: ' + process.env.PORT);
   });
 }
 bootstrap();

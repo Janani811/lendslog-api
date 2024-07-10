@@ -15,6 +15,6 @@ export const users = pgTable('users', {
   us_address: text('us_address'),
   us_phone_no: text('us_phone_no'),
   us_created_at: timestamp('us_created_at', { mode: 'string' })
-  .notNull()
-  .default(sql`now()`),
-})
+    .notNull()
+    .default(sql`now()`),
+});

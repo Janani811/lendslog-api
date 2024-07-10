@@ -5,7 +5,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import connectionOptions from './config/database.config';
 import { DatabaseService } from './database.service';
-import * as schema  from './schemas/schema';
+import * as schema from './schemas/schema';
 import { ConfigService } from '@nestjs/config';
 import { Env } from '../env.interface';
 import { repositories } from './repositories';

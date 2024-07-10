@@ -13,6 +13,6 @@ export default {
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     user: process.env.DB_USER,
-    ssl: process.env.NODE_ENV === "production"
+    ssl: process.env.NODE_ENV === 'production',
   },
 } satisfies Config;
