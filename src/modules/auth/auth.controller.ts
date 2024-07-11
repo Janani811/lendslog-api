@@ -71,6 +71,7 @@ export class AuthController {
   @Post('verify-otp')
   async verify(@Body() dto: VerifyDto, @Request() req, @Response() res) {
     try {
+      return res.status(403).json({ error: 'Invalid OTP' });
       const response: any = await this.authService.verifyOTP(
         dto.phone,
         dto.code,
