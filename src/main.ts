@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { STATUS_CODES } from 'http';
 import { json, urlencoded } from 'express';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +15,18 @@ async function bootstrap() {
   app.use(urlencoded({ extended: false }));
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      transform: true,
+      exceptionFactory: (errors) => {
+        const result = errors.map((error) => ({
+          property: error.property,
+          message: error.constraints[Object.keys(error.constraints)[0]],
+        }));
+        return new BadRequestException({
+          validationErrors: result,
+          error: STATUS_CODES[400],
+          statusCode: 400,
+        });
+      },
+      stopAtFirstError: true,
     }),
   );
   await app.listen(+process.env.PORT || 3000, () => {
