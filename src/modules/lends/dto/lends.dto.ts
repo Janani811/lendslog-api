@@ -1,8 +1,9 @@
 import { Transform, TransformFnParams } from 'class-transformer';
 import {
   IsBoolean,
+  IsInt,
   IsNotEmpty,
-  IsNumberString,
+  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -59,18 +60,20 @@ export class AddLend {
   @Transform(({ value }: TransformFnParams) => value?.trim())
   ld_surety_notes: string;
 
-  @IsNumberString({}, { message: 'Please enter valid amount' })
-  ld_lend_amount: string;
+  @IsNumber({}, { message: 'Please enter valid amount' })
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
+  ld_lend_amount: number;
 
-  @IsNumberString({}, { message: 'Choose interest rate' })
-  ld_interest_rate: string;
+  @IsInt({ message: 'Choose interest rate' })
+  @Transform(({ value }) => parseInt(value), { toClassOnly: true })
+  ld_interest_rate: number;
 
-  @IsString()
   @IsNotEmpty({ message: 'Choose payment mode' })
-  ld_payment_mode: string;
+  ld_payment_term: string;
 
-  @IsNumberString({}, { message: 'Weeks or month must be a number' })
-  ld_total_weeks_or_month: string;
+  @IsNumber({}, { message: 'Weeks or month must be a number' })
+  @Transform(({ value }) => parseInt(value), { toClassOnly: true })
+  ld_total_weeks_or_month: number;
 
   @IsOptional()
   ld_start_date: string;

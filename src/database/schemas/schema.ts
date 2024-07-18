@@ -29,11 +29,11 @@ export const paymentType = pgTable('payment_type', {
     .default(sql`now()`),
 });
 
-// payment mode table
-export const paymentMode = pgTable('payment_mode', {
-  pm_id: serial('pm_id').primaryKey(),
-  pm_name: varchar('pm_name', { length: 100 }),
-  pm_created_at: timestamp('pm_created_at', { mode: 'string' })
+// payment Term table
+export const paymentTerm = pgTable('payment_term', {
+  pterm_id: serial('pterm_id').primaryKey(),
+  pterm_name: varchar('pterm_name', { length: 100 }),
+  pterm_created_at: timestamp('pterm_created_at', { mode: 'string' })
     .notNull()
     .default(sql`now()`),
 });
@@ -95,18 +95,18 @@ export const lends = pgTable('lends', {
   ld_surety_type: integer('ld_surety_type'),
   ld_surety_notes: text('ld_surety_notes'),
   // lend details
-  ld_lend_amount: decimal('ld_lend_amount', { precision: 4 }).notNull(),
-  ld_interest_rate: decimal('ld_interest_rate', { precision: 4 }).notNull(),
+  ld_lend_amount: decimal('ld_lend_amount', { precision: 20, scale: 4 }).notNull(),
+  ld_interest_rate: decimal('ld_interest_rate', { precision: 10 }).notNull(),
   ld_total_weeks_or_month: decimal('ld_total_weeks_or_month').notNull(),
-  ld_interest_amount: decimal('ld_interest_amount', { precision: 4 }).notNull(),
-  ld_base_amount: decimal('ld_base_amount', { precision: 4 }), // calculate based on payment mode for single payment
-  ld_payment_mode: integer('ld_payment_mode'), // interest or principal with interest
-  ld_payment_type: integer('ld_payment_type').notNull(), // week or month
+  ld_interest_amount: decimal('ld_interest_amount', { precision: 20, scale: 4 }), // notNull()
+  ld_principal_repayment: decimal('ld_principal_repayment', { precision: 20 , scale: 4}), // calculate based on payment mode for single payment
+  ld_payment_term: integer('ld_payment_term').notNull(), // interest or principal with interest
+  ld_payment_type: integer('ld_payment_type'), // notNull() // week or month
   ld_borrowed_date: timestamp('ld_borrowed_date', { mode: 'string' })
     .notNull()
     .default(sql`now()`), // current date
-  ld_start_date: date('ld_start_date').notNull(),
-  ld_end_date: date('ld_end_date').notNull(), // calculate on backend based on start date nad lend details
+  ld_start_date: date('ld_start_date'), // notNull(),
+  ld_end_date: date('ld_end_date'), // notNull(), // calculate on backend based on start date nad lend details
   ld_created_at: timestamp('ld_created_at', { mode: 'string' })
     .notNull()
     .default(sql`now()`),
