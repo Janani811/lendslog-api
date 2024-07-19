@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
+  Min,
   ValidateIf,
 } from 'class-validator';
 
@@ -62,6 +63,8 @@ export class AddLend {
 
   @IsNumber({}, { message: 'Please enter valid amount' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
+  @IsInt()
+  @Min(1, { message: 'Please enter valid amount' })
   ld_lend_amount: number;
 
   @IsInt({ message: 'Choose interest rate' })
@@ -69,12 +72,13 @@ export class AddLend {
   ld_interest_rate: number;
 
   @IsNotEmpty({ message: 'Choose payment mode' })
+  @Transform(({ value }) => parseInt(value), { toClassOnly: true })
   ld_payment_term: string;
 
   @IsNumber({}, { message: 'Weeks or month must be a number' })
   @Transform(({ value }) => parseInt(value), { toClassOnly: true })
   ld_total_weeks_or_month: number;
 
-  @IsOptional()
+  @IsNotEmpty({ message: 'Choose start date' })
   ld_start_date: string;
 }
