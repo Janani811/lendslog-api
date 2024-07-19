@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post, Request, Response } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
+
 import { SendVerifyDto, SignInDto, SignUpDto, VerifyDto } from './dto/auth.dto';
 
 @Controller('auth')
@@ -50,15 +52,9 @@ export class AuthController {
     }
   }
   @Post('send-otp')
-  async sendVerify(
-    @Body() dto: SendVerifyDto,
-    @Request() req,
-    @Response() res,
-  ) {
+  async sendVerify(@Body() dto: SendVerifyDto, @Request() req, @Response() res) {
     try {
-      const response: any = await this.authService.sendVerificationOTP(
-        dto.phone,
-      );
+      const response: any = await this.authService.sendVerificationOTP(dto.phone);
       console.log(response);
       return res.json({
         status: 200,
@@ -72,10 +68,7 @@ export class AuthController {
   async verify(@Body() dto: VerifyDto, @Request() req, @Response() res) {
     try {
       return res.status(403).json({ error: 'Invalid OTP' });
-      const response: any = await this.authService.verifyOTP(
-        dto.phone,
-        dto.code,
-      );
+      const response: any = await this.authService.verifyOTP(dto.phone, dto.code);
       if (response && !response.valid) {
         return res.status(403).json({ error: 'Invalid OTP' });
       }

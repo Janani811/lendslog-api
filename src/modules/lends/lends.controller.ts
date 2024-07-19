@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Request, Response } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, Response } from '@nestjs/common';
 
 import { LendsService } from './lends.service';
+
 import { AddLend } from './dto/lends.dto';
 
 @Controller('lends')
@@ -20,13 +21,25 @@ export class LendsController {
     }
   }
 
+  @Get(':ld_id')
+  async getLend(@Request() req, @Response() res, @Param() param) {
+    try {
+      const lends = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+      return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
   // create lend
   @Post()
   async add(@Request() req, @Response() res, @Body() dto: AddLend) {
     try {
+      // console.log(moment(new Date(dto.ld_start_date), 'YYYY-MM-DD').add(7, 'days').toDate());
       console.log(dto);
-      const temp_amount: number =
-        Number(dto.ld_lend_amount * (dto.ld_interest_rate / 100)) * 10;
+      const temp_amount: number = Number(dto.ld_lend_amount * (dto.ld_interest_rate / 100)) * 10;
       // calculate interest amount
       const ld_interest_amount: number =
         (temp_amount - dto.ld_lend_amount) / dto.ld_total_weeks_or_month;
@@ -45,18 +58,39 @@ export class LendsController {
       }
 
       // create
-      await this.lendsService.create({
+      const [lend] = await this.lendsService.create({
         ...dto,
         ld_lender_id: req.user.us_id,
         ld_interest_amount: ld_interest_amount,
-        ld_total_weeks_or_month: Number(dto.ld_total_weeks_or_month),
-        ld_lend_amount: Number(dto.ld_lend_amount),
+        ld_total_weeks_or_month: dto.ld_total_weeks_or_month,
+        ld_lend_amount: dto.ld_lend_amount,
         ld_principal_repayment: ld_principal_repayment,
         ld_start_date: new Date(dto.ld_start_date),
+      });
+      console.log(lend);
+
+      await this.lendsService.createInstallementTimeLines({
+        it_lend_id: lend.ld_id,
+        startDate: lend.ld_start_date,
+        totalWeeksOrMonths: Number(lend.ld_total_weeks_or_month),
+        paymentTerm: lend.ld_payment_term,
       });
       return res.status(200).json({
         message: 'Lend added successfully',
       });
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  // get all installment timelines of specific lend
+  @Get('installments/:it_lend_id')
+  async getAllInstallments(@Request() req, @Response() res, @Param() params) {
+    try {
+      const lends = await this.lendsService.getAllInstallments({
+        it_lend_id: params.it_lend_id,
+      });
+      return res.status(200).json(lends);
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }

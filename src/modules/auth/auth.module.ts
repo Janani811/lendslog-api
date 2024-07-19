@@ -1,17 +1,13 @@
-import {
-  Global,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 
+import { DatabaseModule } from 'src/database/database.module';
+
 import { AuthController } from './auth.controller';
 import { AuthMiddleware } from './middleware/auth.middleware';
+
 import { AuthService } from './auth.service';
-import { DatabaseModule } from 'src/database/database.module';
 import { TwilioService } from './twilio.service';
 
 @Global()

@@ -1,7 +1,9 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { DatabaseModule } from 'src/database/database.module';
+
 import { AuthMiddleware } from '../auth/middleware/auth.middleware';
+
 import { LendsService } from './lends.service';
 import { LendsController } from './lends.controller';
 

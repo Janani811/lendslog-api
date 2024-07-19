@@ -71,9 +71,9 @@ export class AddLend {
   @Transform(({ value }) => parseInt(value), { toClassOnly: true })
   ld_interest_rate: number;
 
-  @IsNotEmpty({ message: 'Choose payment mode' })
+  @IsNotEmpty({ message: 'Choose payment term' })
   @Transform(({ value }) => parseInt(value), { toClassOnly: true })
-  ld_payment_term: string;
+  ld_payment_term: number;
 
   @IsNumber({}, { message: 'Weeks or month must be a number' })
   @Transform(({ value }) => parseInt(value), { toClassOnly: true })

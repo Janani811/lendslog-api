@@ -7,12 +7,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { SignInDto, SignUpDto } from './dto/auth.dto';
+
 import { UserRepository } from 'src/database/repositories/User.repository';
+
 import { TwilioService } from './twilio.service';
+
+import { SignInDto, SignUpDto } from './dto/auth.dto';
 // import { users } from 'src/database/schemas/schema';
 
 

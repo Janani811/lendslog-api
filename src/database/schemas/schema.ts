@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   serial,
   pgTable,
@@ -99,7 +99,7 @@ export const lends = pgTable('lends', {
   ld_interest_rate: decimal('ld_interest_rate', { precision: 10 }).notNull(),
   ld_total_weeks_or_month: decimal('ld_total_weeks_or_month').notNull(),
   ld_interest_amount: decimal('ld_interest_amount', { precision: 20, scale: 4 }), // notNull()
-  ld_principal_repayment: decimal('ld_principal_repayment', { precision: 20 , scale: 4}), // calculate based on payment mode for single payment
+  ld_principal_repayment: decimal('ld_principal_repayment', { precision: 20, scale: 4 }), // calculate based on payment mode for single payment
   ld_payment_term: integer('ld_payment_term').notNull(), // interest or principal with interest
   ld_payment_type: integer('ld_payment_type'), // notNull() // week or month
   ld_borrowed_date: timestamp('ld_borrowed_date', { mode: 'string' })
@@ -114,4 +114,36 @@ export const lends = pgTable('lends', {
     mode: 'date',
     precision: 3,
   }).$onUpdate(() => sql`now()`),
+  ld_lend_status: integer('ld_lend_status').default(1),
+  ld_is_deleted: integer('ld_is_deleted').default(0),
 });
+
+// lends relations
+export const lendsRelation = relations(lends, ({ many }) => ({
+  installmentTimelines: many(installmentTimelines),
+}));
+
+// Installment Timelines
+export const installmentTimelines = pgTable('installment_timeline', {
+  it_id: serial('it_id').primaryKey(),
+  it_lend_id: integer('it_lend_id').notNull(), // lends id
+  it_installment_date: date('it_installment_date').notNull(),
+  it_installement_status: integer('it_installement_status').default(1),
+  it_created_at: timestamp('it_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  it_updated_at: timestamp('it_updated_at', {
+    mode: 'date',
+    precision: 3,
+  }).$onUpdate(() => sql`now()`),
+  it_is_deleted: integer('it_is_deleted').default(0),
+  it_remaining_amount: decimal('it_remaining_amount', { precision: 20, scale: 4 }),
+});
+
+// Installement Relations
+export const installmentTimelineRelations = relations(installmentTimelines, ({ one }) => ({
+  lend: one(lends, {
+    fields: [installmentTimelines.it_lend_id],
+    references: [lends.ld_id],
+  }),
+}));
