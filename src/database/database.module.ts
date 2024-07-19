@@ -1,24 +1,25 @@
 import { Module } from '@nestjs/common';
-import { DB } from './database.constants';
-
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
-import connectionOptions from './config/database.config';
-import { DatabaseService } from './database.service';
-import * as schema from './schemas/schema';
 import { ConfigService } from '@nestjs/config';
-import { Env } from '../env.interface';
-import { repositories } from './repositories';
+
+import connectionOptions from './config/database.config';
+import { DB } from './database.constants';
+import { DatabaseService } from './database.service';
 import { Database } from './types/Database';
+
+import * as schema from './schemas/schema';
+
+import { Env } from '../env.interface';
+
+import { repositories } from './repositories';
 
 @Module({
   providers: [
     {
       provide: DB,
       inject: [ConfigService],
-      useFactory: async (
-        configService: ConfigService<Env>,
-      ): Promise<Database> => {
+      useFactory: async (configService: ConfigService<Env>): Promise<Database> => {
         const connection = new Client(connectionOptions);
         await connection.connect();
         return {

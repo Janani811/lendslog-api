@@ -1,7 +1,8 @@
 import { migrate } from 'drizzle-orm/vercel-postgres/migrator';
-import connectionOptions from '../config/database.config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
+
+import connectionOptions from '../config/database.config';
 
 async function runMigration() {
   const connection = new Client(connectionOptions);

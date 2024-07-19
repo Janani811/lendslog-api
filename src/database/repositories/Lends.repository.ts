@@ -1,9 +1,10 @@
 import { Inject } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
+
 import { lends } from '../schemas/schema';
-import { eq } from 'drizzle-orm';
 
 export class LendsRepository {
   constructor(
@@ -15,6 +16,15 @@ export class LendsRepository {
   async getAll(args: { ld_lender_id: number }) {
     return this.dbObject.db.query.lends.findMany({
       where: eq(lends.ld_lender_id, args.ld_lender_id),
+      with: { installmentTimelines: true },
+    });
+  }
+
+  // get specific lend based on ld_id
+  async getOne(args: { ld_id: number }) {
+    return this.dbObject.db.query.lends.findFirst({
+      where: eq(lends.ld_id, args.ld_id),
+      with: { installmentTimelines: true },
     });
   }
 

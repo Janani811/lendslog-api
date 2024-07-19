@@ -1,7 +1,9 @@
 import { Inject } from '@nestjs/common';
+import { and } from 'drizzle-orm';
+
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
-import { and } from 'drizzle-orm';
+
 import { users } from '../schemas/schema';
 
 export class UserRepository {

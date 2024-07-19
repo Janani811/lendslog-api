@@ -1,7 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
-import { Env } from '../../env.interface';
 import { ConnectionConfig } from 'pg';
+
+import { Env } from '../../env.interface';
 
 config();
 
