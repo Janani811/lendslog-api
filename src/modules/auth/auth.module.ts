@@ -11,8 +11,6 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { AuthService } from './auth.service';
-import { UserRepository } from 'src/database/repositories/User.repository';
-import { DB } from 'src/database/database.constants';
 import { DatabaseModule } from 'src/database/database.module';
 import { TwilioService } from './twilio.service';
 
@@ -21,7 +19,7 @@ import { TwilioService } from './twilio.service';
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRY },
+      // signOptions: { expiresIn: process.env.JWT_EXPIRY },
     }),
     DatabaseModule,
     PassportModule,

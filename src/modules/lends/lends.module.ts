@@ -10,7 +10,6 @@ import { LendsController } from './lends.controller';
   controllers: [LendsController],
   providers: [LendsService],
 })
-
 export class LendsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
