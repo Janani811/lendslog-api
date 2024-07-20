@@ -3,6 +3,7 @@ import { Body, Controller, Get, Param, Post, Request, Response } from '@nestjs/c
 import { LendsService } from './lends.service';
 
 import { AddLend } from './dto/lends.dto';
+import { PaymentTerm } from 'utils/enums';
 
 @Controller('lends')
 export class LendsController {
@@ -12,10 +13,13 @@ export class LendsController {
   @Get('all')
   async getAllLends(@Request() req, @Response() res) {
     try {
-      const lends = await this.lendsService.getAll({
+      const allLends = await this.lendsService.getAll({
         ld_lender_id: req.user.us_id,
       });
-      return res.status(200).json(lends);
+      const weekLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Week);
+      const monthLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Month);
+
+      return res.status(200).json({ allLends, weekLends, monthLends });
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }
