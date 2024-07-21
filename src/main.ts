@@ -1,12 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { STATUS_CODES } from 'http';
 import { json, urlencoded } from 'express';
+import * as firebase from 'firebase-admin';
+import * as path from 'path';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  firebase.initializeApp({
+    credential: firebase.credential.cert(
+      path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
+    ),
+  });
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

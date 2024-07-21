@@ -4,10 +4,14 @@ import { LendsService } from './lends.service';
 
 import { AddLend } from './dto/lends.dto';
 import { PaymentTerm } from 'utils/enums';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Controller('lends')
 export class LendsController {
-  constructor(public lendsService: LendsService) {}
+  constructor(
+    private lendsService: LendsService,
+    private notificationService: NotificationService,
+  ) {}
 
   // get all lends
   @Get('all')
@@ -18,7 +22,7 @@ export class LendsController {
       });
       const weekLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Week);
       const monthLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Month);
-
+      // await this.notificationService.sendPush();
       return res.status(200).json({ allLends, weekLends, monthLends });
     } catch (error) {
       return res.status(403).json({ error: error.message });
