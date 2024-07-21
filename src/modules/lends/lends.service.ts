@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import { InstallmentTimelineRepository } from 'src/database/repositories/InstallmentTimelines.repository';
 import { LendsRepository } from 'src/database/repositories/Lends.Repository';
 
-import { PaymentTerm } from 'utils/enums';
+import { PaymentTerm, Status } from 'utils/enums';
 
 @Injectable()
 export class LendsService {
@@ -16,7 +16,32 @@ export class LendsService {
   // get all lends
   async getAll(data) {
     try {
-      return await this.lendsRepository.getAll(data);
+      const allLends = await this.lendsRepository.getAll(data);
+      allLends.map((lend: any) => {
+        let paidCount: number = 0,
+          paidAmount: number = 0,
+          pendingAmount: number = 0;
+        lend.installmentTimelines.map((installment: any) => {
+          if (installment.it_installement_status == Status.Completed) {
+            paidCount = paidCount + 1;
+          }
+        });
+        if (paidCount > 0) {
+          paidAmount =
+            (Number(lend.ld_interest_amount) + Number(lend.ld_principal_repayment)) * paidCount;
+          pendingAmount =
+            Number(lend.ld_lend_amount) +
+            Number(lend.ld_interest_amount * lend.ld_total_weeks_or_month) -
+            Number(paidAmount);
+        }
+        lend.ld_paid_amount = paidAmount.toFixed(2) || 0;
+        lend.ld_pending_amount = Number(pendingAmount).toFixed(2) || 0;
+        lend.ld_paid_weeks = paidCount || 0;
+        lend.ld_pending_weeks = lend.ld_total_weeks_or_month - paidCount || 0;
+      });
+      const weekLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Week);
+      const monthLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Month);
+      return { allLends, weekLends, monthLends };
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
