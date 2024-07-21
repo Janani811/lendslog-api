@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm';
+import { type InferInsertModel, type InferSelectModel, relations, sql } from 'drizzle-orm';
 import {
   serial,
   pgTable,
@@ -70,10 +70,12 @@ export const users = pgTable('users', {
     .notNull()
     .default(sql`now()`),
   us_updated_at: timestamp('us_updated_at', {
-    mode: 'date',
-    precision: 3,
+    mode: 'string',
   }).$onUpdate(() => sql`now()`),
 });
+
+export type InsertUser = InferInsertModel<typeof users>;
+export type SelectUser = InferSelectModel<typeof users>;
 
 // lends table
 export const lends = pgTable('lends', {

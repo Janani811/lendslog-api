@@ -45,10 +45,10 @@ export class AuthService {
 
   async signup(dto: SignUpDto) {
 
-    const existUser = await this.usersRepository.getOne({ email: dto.email });
+    const existUser = await this.usersRepository.getOne({ phone: dto.phone });
 
     if (existUser) {
-      throw new HttpException('Your email already exists', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Your phone number already exists', HttpStatus.BAD_REQUEST);
     }
 
     try {
@@ -56,7 +56,6 @@ export class AuthService {
       const hashPass = await bcrypt.hash(dto.password, 10);
       await this.usersRepository.createUser({
         us_name: dto.name,
-        us_email: dto.email,
         us_password: hashPass,
         us_password_salt: salt,
         us_phone_no: dto.phone
@@ -67,15 +66,17 @@ export class AuthService {
   }
 
   async login(dto: SignInDto) {
-    const user = await this.usersRepository.getOne({ email: dto.email });
+    const user = await this.usersRepository.getOne({ phone: dto.phone });
 
     if (!user) {
       throw new ForbiddenException('User not found');
     }
+    if (!user.us_active) throw new ForbiddenException('Your account verification is pending');
     // compare password
     const isMatch = await bcrypt.compare(dto.password, user.us_password);
 
     if (!isMatch) throw new ForbiddenException('Your Credentials are incorrect');
+    
     delete user.us_password;
     delete user.us_password_salt;
     const jwtToken = await this.signInToken(user);
@@ -98,7 +99,7 @@ export class AuthService {
     }
   }
 
-  async sendVerificationOTP(phoneNumber: string): Promise<string> {
+  async sendVerificationOTP(phoneNumber: string) {
     try {
       const { response } = await this.twilioService.sendOtp(phoneNumber)
       return response;
@@ -106,11 +107,16 @@ export class AuthService {
       throw new ForbiddenException('Failed to send OTP');
     }
   }
-  async verifyOTP(phone: string,code: string): Promise<string> {
+  async verifyOTP(phone: string, code: string) {
     try {
       const { response } = await this.twilioService.verifyOtp(phone,code)
+      if (response && !response.valid) {
+        throw new ForbiddenException('Invalid OTP');
+      }
+      await this.usersRepository.updateUser({ us_active: true }, phone);
       return response;
     } catch (e) {
+      console.log(e);
       throw new ForbiddenException('OTP verification failed');
     }
   }

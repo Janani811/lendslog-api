@@ -22,6 +22,7 @@ export class TwilioService {
       .services(serviceSid)
       .verifications.create({ to: phoneNumber, channel: 'sms' })
       .then((verification) => (response = verification));
+    console.log(response);
     return { response };
   }
 
