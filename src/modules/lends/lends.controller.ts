@@ -1,10 +1,9 @@
 import { Body, Controller, Get, Param, Post, Request, Response } from '@nestjs/common';
 
 import { LendsService } from './lends.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 import { AddLend } from './dto/lends.dto';
-import { PaymentTerm } from 'utils/enums';
-import { NotificationService } from 'src/notification/notification.service';
 
 @Controller('lends')
 export class LendsController {
@@ -17,11 +16,9 @@ export class LendsController {
   @Get('all')
   async getAllLends(@Request() req, @Response() res) {
     try {
-      const allLends = await this.lendsService.getAll({
+      const { allLends, weekLends, monthLends } = await this.lendsService.getAll({
         ld_lender_id: req.user.us_id,
       });
-      const weekLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Week);
-      const monthLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Month);
       // await this.notificationService.sendPush();
       return res.status(200).json({ allLends, weekLends, monthLends });
     } catch (error) {
