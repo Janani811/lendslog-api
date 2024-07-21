@@ -1,24 +1,25 @@
-import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 export class SignUpDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  // @IsEmail()
+  // @IsNotEmpty()
+  // email: string;
   @IsString()
   @IsNotEmpty()
   password: string;
   @IsString()
   @IsNotEmpty()
   name: string;
-  @IsString()
+
   @IsNotEmpty()
   @IsPhoneNumber('IN')
   phone: string;
 }
 export class SignInDto {
-  @IsEmail()
   @IsNotEmpty()
-  email: string;
+  @IsPhoneNumber('IN')
+  phone: string;
+
   @IsString()
   @IsNotEmpty()
   password: string;
@@ -48,7 +49,7 @@ export class UpdateOrgDto {
 export class SendVerifyDto {
   @IsString()
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber('IN')
   phone: string;
 }
 export class VerifyDto {
