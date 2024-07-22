@@ -38,6 +38,7 @@ export class LendsService {
         lend.ld_pending_amount = Number(pendingAmount).toFixed(2) || 0;
         lend.ld_paid_weeks = paidCount || 0;
         lend.ld_pending_weeks = lend.ld_total_weeks_or_month - paidCount || 0;
+        lend.ld_lend_amount = Number(lend.ld_lend_amount).toFixed(2);
       });
       const weekLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Week);
       const monthLends = allLends.filter((lend) => lend.ld_payment_term === PaymentTerm.Month);
