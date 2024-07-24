@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import { InstallmentTimelineRepository } from 'src/database/repositories/InstallmentTimelines.repository';
 import { LendsRepository } from '../../database/repositories/Lends.repository';
 
-import { PaymentTerm, Status } from 'utils/enums';
+import { PaymentTerm, Status } from '../../../utils/enums';
 
 @Injectable()
 export class LendsService {
