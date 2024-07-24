@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 
 import { InstallmentTimelineRepository } from 'src/database/repositories/InstallmentTimelines.repository';
-import { LendsRepository } from 'src/database/repositories/Lends.Repository';
+import { LendsRepository } from '../../database/repositories/Lends.repository';
 
 import { PaymentTerm, Status } from 'utils/enums';
 
