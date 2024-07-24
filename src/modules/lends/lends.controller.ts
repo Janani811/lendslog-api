@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Request, Response } from '@nestjs/common';
 
 import { LendsService } from './lends.service';
-import { NotificationService } from 'src/notification/notification.service';
+import { NotificationService } from '../../notification/notification.service';
 
 import { AddLend } from './dto/lends.dto';
 

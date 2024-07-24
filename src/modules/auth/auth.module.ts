@@ -2,7 +2,7 @@ import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 
-import { DatabaseModule } from 'src/database/database.module';
+import { DatabaseModule } from '../../database/database.module';
 
 import { AuthController } from './auth.controller';
 import { AuthMiddleware } from './middleware/auth.middleware';

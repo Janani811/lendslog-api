@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { UserRepository } from 'src/database/repositories/User.repository';
+import { UserRepository } from '../../database/repositories/User.repository';
 
 import { TwilioService } from './twilio.service';
 
