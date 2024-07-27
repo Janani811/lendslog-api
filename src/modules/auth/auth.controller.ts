@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, Request, Response } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Request, Response } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 
-import { SendVerifyDto, SignInDto, SignUpDto, VerifyDto } from './dto/auth.dto';
+import { SendVerifyDto, SignInDto, SignUpDto, UpdateUserDto, VerifyDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -75,13 +75,16 @@ export class AuthController {
     }
   }
 
-  // @Put('edit-profile')
-  // async editProfile(@Body() dto: UpdateUserDto, @Request() req, @Response() res) {
-  //   try {
-  //     const user = await this.authService.editProfile(req.user.us_id, dto);
-  //     return res.json({ status: 200, message: 'Profile updated successfully', user });
-  //   } catch (error) {
-  //     return res.status(403).json({ error: error.message });
-  //   }
-  // }
+  @Put('edit-profile')
+  async editProfile(@Body() dto: UpdateUserDto, @Request() req, @Response() res) {
+    try {
+      console.log(dto);
+      const user = await this.authService.editProfile(req.user.us_id, dto);
+      console.log(user);
+      return res.json({ status: 200, message: 'Profile updated successfully', user });
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
 }

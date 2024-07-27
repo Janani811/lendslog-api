@@ -14,9 +14,8 @@ import { UserRepository } from '../../database/repositories/User.repository';
 
 import { TwilioService } from './twilio.service';
 
-import { SignInDto, SignUpDto } from './dto/auth.dto';
+import { SignInDto, SignUpDto, UpdateUserDto } from './dto/auth.dto';
 // import { users } from 'src/database/schemas/schema';
-
 
 @Injectable()
 export class AuthService {
@@ -30,7 +29,7 @@ export class AuthService {
   async fetchProfile(id: number) {
     try {
       const user: any = await this.usersRepository.getOne({
-         id:id
+        id: id,
       });
       if (!user) {
         return null;
@@ -44,7 +43,6 @@ export class AuthService {
   }
 
   async signup(dto: SignUpDto) {
-
     const existUser = await this.usersRepository.getOne({ phone: dto.phone });
 
     if (existUser) {
@@ -58,7 +56,7 @@ export class AuthService {
         us_name: dto.name,
         us_password: hashPass,
         us_password_salt: salt,
-        us_phone_no: dto.phone
+        us_phone_no: dto.phone,
       });
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
@@ -76,7 +74,7 @@ export class AuthService {
     const isMatch = await bcrypt.compare(dto.password, user.us_password);
 
     if (!isMatch) throw new ForbiddenException('Your Credentials are incorrect');
-    
+
     delete user.us_password;
     delete user.us_password_salt;
     const jwtToken = await this.signInToken(user);
@@ -101,7 +99,7 @@ export class AuthService {
 
   async sendVerificationOTP(phoneNumber: string) {
     try {
-      const { response } = await this.twilioService.sendOtp(phoneNumber)
+      const { response } = await this.twilioService.sendOtp(phoneNumber);
       return response;
     } catch (e) {
       throw new ForbiddenException('Failed to send OTP');
@@ -109,11 +107,11 @@ export class AuthService {
   }
   async verifyOTP(phone: string, code: string) {
     try {
-      const { response } = await this.twilioService.verifyOtp(phone,code)
+      const { response } = await this.twilioService.verifyOtp(phone, code);
       if (response && !response.valid) {
         throw new ForbiddenException('Invalid OTP');
       }
-      await this.usersRepository.updateUser({ us_active: true }, phone);
+      await this.usersRepository.updateUser({ us_active: true }, { us_phone_no: phone });
       return response;
     } catch (e) {
       console.log(e);
@@ -121,12 +119,19 @@ export class AuthService {
     }
   }
 
-  // async editProfile(id: number, data: UpdateUserDto) {
-  //   try {
-  //     const user = await this.usersRepository.updateUser(id, data);
-  //     return user;
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
+  // edit profile
+  async editProfile(us_id: number, dto: UpdateUserDto) {
+    try {
+      console.log(dto);
+      const existUser = await this.usersRepository.getOne({ id: us_id });
+      if (!existUser) {
+        throw new HttpException("Oops!, We can't find you in our database", HttpStatus.BAD_REQUEST);
+      }
+      await this.usersRepository.updateUser(dto, { us_id });
+      const user = await this.usersRepository.getOne({ id: us_id });
+      return user;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

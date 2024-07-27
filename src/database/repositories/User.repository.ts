@@ -28,11 +28,11 @@ export class UserRepository {
   async createUser(data: any) {
     return await this.dbObject.db.insert(users).values(data).returning();
   }
-  async updateUser(data: InsertUser, phone: string) {
+  async updateUser(data: InsertUser, args: { us_phone_no?: string; us_id?: number }) {
     return await this.dbObject.db
       .update(users)
       .set(data)
-      .where(eq(users.us_phone_no, phone))
+      .where(args.us_id ? eq(users.us_id, args.us_id) : eq(users.us_phone_no, args.us_phone_no))
       .returning();
   }
 }
