@@ -113,8 +113,7 @@ export const lends = pgTable('lends', {
     .notNull()
     .default(sql`now()`),
   ld_updated_at: timestamp('ld_updated_at', {
-    mode: 'date',
-    precision: 3,
+    mode: 'string',
   }).$onUpdate(() => sql`now()`),
   ld_lend_status: integer('ld_lend_status').default(1),
   ld_is_deleted: integer('ld_is_deleted').default(0),
@@ -135,11 +134,11 @@ export const installmentTimelines = pgTable('installment_timeline', {
     .notNull()
     .default(sql`now()`),
   it_updated_at: timestamp('it_updated_at', {
-    mode: 'date',
-    precision: 3,
+    mode: 'string',
   }).$onUpdate(() => sql`now()`),
+  it_order: integer('it_order'),
   it_is_deleted: integer('it_is_deleted').default(0),
-  it_remaining_amount: decimal('it_remaining_amount', { precision: 20, scale: 4 }),
+  it_term_amount: decimal('it_term_amount', { precision: 20, scale: 4 }),
 });
 
 // Installement Relations
