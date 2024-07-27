@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post, Request, Response } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Request, Response } from '@nestjs/common';
 
 import { LendsService } from './lends.service';
 import { NotificationService } from '../../notification/notification.service';
 
-import { AddLend } from './dto/lends.dto';
+import { AddLend, EditLend } from './dto/lends.dto';
 
 @Controller('lends')
 export class LendsController {
@@ -42,8 +42,8 @@ export class LendsController {
   @Post()
   async add(@Request() req, @Response() res, @Body() dto: AddLend) {
     try {
-      // console.log(moment(new Date(dto.ld_start_date), 'YYYY-MM-DD').add(7, 'days').toDate());
       console.log(dto);
+      // console.log(moment(new Date(dto.ld_start_date), 'YYYY-MM-DD').add(7, 'days').toDate());
       const temp_amount: number = Number(dto.ld_lend_amount * (dto.ld_interest_rate / 100)) * 10;
       // calculate interest amount
       const ld_interest_amount: number =
@@ -72,18 +72,57 @@ export class LendsController {
         ld_principal_repayment: ld_principal_repayment,
         ld_start_date: new Date(dto.ld_start_date),
       });
-      console.log(lend);
 
       await this.lendsService.createInstallementTimeLines({
         it_lend_id: lend.ld_id,
         startDate: lend.ld_start_date,
         totalWeeksOrMonths: Number(lend.ld_total_weeks_or_month),
         paymentTerm: lend.ld_payment_term,
+        termAmount: ld_principal_repayment + ld_interest_amount,
       });
       return res.status(200).json({
         message: 'Lend added successfully',
       });
     } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  // create lend
+  @Put(':ld_id')
+  async edit(@Request() req, @Response() res, @Body() dto: EditLend, @Param() param) {
+    try {
+      const ld_id = param.ld_id;
+
+      if (!dto.ld_is_nominee) {
+        delete dto.ld_nominee_name;
+        delete dto.ld_nominee_phoneno;
+        delete dto.ld_nominee_address;
+        delete dto.ld_nominee_notes;
+      }
+      if (!dto.ld_is_surety) {
+        delete dto.ld_surety_type;
+        delete dto.ld_surety_notes;
+      }
+
+      // create
+      await this.lendsService.update(
+        {
+          ...dto,
+        },
+        ld_id,
+      );
+
+      const lend = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+
+      return res.status(200).json({
+        message: 'Lend update successfully',
+        lend,
+      });
+    } catch (error) {
+      console.log(error);
       return res.status(403).json({ error: error.message });
     }
   }

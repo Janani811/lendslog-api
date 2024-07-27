@@ -2,19 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { STATUS_CODES } from 'http';
 import { json, urlencoded } from 'express';
 import * as firebase from 'firebase-admin';
-// import * as path from 'path';
+import * as path from 'path';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
+  // const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
   firebase.initializeApp({
-    credential: firebase.credential.cert(serviceAccount),
-    // credential: firebase.credential.cert(
-    //   path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
-    // ),
+    // credential: firebase.credential.cert(serviceAccount),
+    credential: firebase.credential.cert(
+      path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
+    ),
   });
   app.enableCors({
     origin: '*',
