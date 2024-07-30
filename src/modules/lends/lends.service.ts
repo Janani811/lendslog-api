@@ -65,6 +65,14 @@ export class LendsService {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
+  // create lend
+  async update(dto: any, id: number) {
+    try {
+      return await this.lendsRepository.updateLend(dto, id);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   // create installment timelines
   async createInstallementTimeLines({
@@ -72,11 +80,13 @@ export class LendsService {
     startDate,
     totalWeeksOrMonths,
     paymentTerm,
+    termAmount,
   }: {
     it_lend_id: number;
     startDate: string;
     totalWeeksOrMonths: number;
     paymentTerm: number;
+    termAmount: number;
   }) {
     try {
       // create lends Installment logs
@@ -88,13 +98,22 @@ export class LendsService {
       }
       const estimatedInstallmentDates = [];
       let lastDate = moment(new Date(startDate), 'YYYY-MM-DD');
-      estimatedInstallmentDates.push({ it_installment_date: lastDate.toDate(), it_lend_id });
-      for (let i = 0; i < totalWeeksOrMonths - 1; i++) {
+      estimatedInstallmentDates.push({
+        it_installment_date: lastDate.toDate(),
+        it_lend_id,
+        it_term_amount: termAmount,
+        it_order: 1,
+      });
+      for (let i = 2; i <= totalWeeksOrMonths; i++) {
         const currentDate = lastDate.add(count, 'days').toDate();
         lastDate = moment(lastDate, 'YYYY-MM-DD');
-        estimatedInstallmentDates.push({ it_installment_date: currentDate, it_lend_id });
+        estimatedInstallmentDates.push({
+          it_installment_date: currentDate,
+          it_lend_id,
+          it_term_amount: termAmount,
+          it_order: i,
+        });
       }
-      console.log(estimatedInstallmentDates, estimatedInstallmentDates.length);
       await this.installmentRepository.addInstallmentTimelines(estimatedInstallmentDates);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
