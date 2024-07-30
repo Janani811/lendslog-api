@@ -26,18 +26,6 @@ export class LendsController {
     }
   }
 
-  @Get(':ld_id')
-  async getLend(@Request() req, @Response() res, @Param() param) {
-    try {
-      const lends = await this.lendsService.getOne({
-        ld_id: param.ld_id,
-      });
-      return res.status(200).json(lends);
-    } catch (error) {
-      return res.status(403).json({ error: error.message });
-    }
-  }
-
   // create lend
   @Post()
   async add(@Request() req, @Response() res, @Body() dto: AddLend) {
@@ -88,7 +76,30 @@ export class LendsController {
     }
   }
 
-  // create lend
+  // get today or pending installments timelines
+  @Get('/today-installments')
+  async getTodayInstallments(@Request() req, @Response() res) {
+    try {
+      const lends = await this.lendsService.getTodayInstallments(req.user.us_id);
+      return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  // get lend by id
+  @Get(':ld_id')
+  async getLend(@Request() req, @Response() res, @Param() param) {
+    try {
+      const lends = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+      return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  // edit lend
   @Put(':ld_id')
   async edit(@Request() req, @Response() res, @Body() dto: EditLend, @Param() param) {
     try {

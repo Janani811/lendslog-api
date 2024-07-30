@@ -128,4 +128,12 @@ export class LendsService {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
+  // get today pending installment_timelines
+  async getTodayInstallments(user_id: number) {
+    try {
+      return await this.installmentRepository.getAllPending(user_id);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
