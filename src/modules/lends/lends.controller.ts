@@ -26,6 +26,21 @@ export class LendsController {
     }
   }
 
+  @Get(':ld_id')
+  async getLend(@Request() req, @Response() res, @Param() param) {
+    try {
+      const lends = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+      if (!lends) {
+        return res.status(400).json({ error: 'The requested lend detail was not found' });
+      }
+      return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
   // create lend
   @Post()
   async add(@Request() req, @Response() res, @Body() dto: AddLend) {
@@ -81,18 +96,6 @@ export class LendsController {
   async getTodayInstallments(@Request() req, @Response() res) {
     try {
       const lends = await this.lendsService.getTodayInstallments(req.user.us_id);
-      return res.status(200).json(lends);
-    } catch (error) {
-      return res.status(403).json({ error: error.message });
-    }
-  }
-  // get lend by id
-  @Get(':ld_id')
-  async getLend(@Request() req, @Response() res, @Param() param) {
-    try {
-      const lends = await this.lendsService.getOne({
-        ld_id: param.ld_id,
-      });
       return res.status(200).json(lends);
     } catch (error) {
       return res.status(403).json({ error: error.message });
