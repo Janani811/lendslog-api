@@ -25,6 +25,16 @@ export class LendsController {
       return res.status(403).json({ error: error.message });
     }
   }
+  // get today or pending installments timelines
+  @Get('today-installments')
+  async getTodayInstallments(@Request() req, @Response() res) {
+    try {
+      const lends = await this.lendsService.getTodayInstallments(req.user.us_id);
+      return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
 
   @Get(':ld_id')
   async getLend(@Request() req, @Response() res, @Param() param) {
@@ -86,17 +96,6 @@ export class LendsController {
       return res.status(200).json({
         message: 'Lend added successfully',
       });
-    } catch (error) {
-      return res.status(403).json({ error: error.message });
-    }
-  }
-
-  // get today or pending installments timelines
-  @Get('/today-installments')
-  async getTodayInstallments(@Request() req, @Response() res) {
-    try {
-      const lends = await this.lendsService.getTodayInstallments(req.user.us_id);
-      return res.status(200).json(lends);
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }

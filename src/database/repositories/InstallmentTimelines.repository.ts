@@ -44,5 +44,33 @@ export class InstallmentTimelineRepository {
       .where(
         sql`DATE(it_installment_date) <= CURRENT_DATE and it_installement_status = 1 and ld_lender_id = ${user_id}`,
       );
+    //     const { rows, rowCount } = await this.dbObject.db.execute(sql`SELECT
+    //     trim(both ' ' from to_char(it_installment_date, 'Month')) || '-' || to_char(it_installment_date, 'YYYY') as month_year,
+    //     json_agg(
+    //         json_build_object(
+    //             'it_id', it_id,
+    //             'it_installment_date', to_char(it_installment_date, 'DD-MM-YYYY'),
+    //             'it_installement_status', it_installement_status,
+    //             'ld_id', ld_id,
+    //             'ld_borrower_name', ld_borrower_name,
+    //             'ld_borrower_phoneno', ld_borrower_phoneno,
+    //             'it_term_amount', round(it_term_amount, 3),
+    //             'it_order', it_order,
+    //             'ld_payment_term', ld_payment_term
+    //         )
+    //     ) as installments
+    // FROM installment_timeline
+    // INNER JOIN lends ON installment_timeline.it_lend_id = lends.ld_id
+    // WHERE
+    //     DATE(it_installment_date) <= CURRENT_DATE
+    //     AND it_installement_status = 1
+    //     AND ld_lender_id = ${user_id}
+    // GROUP BY
+    //     trim(both ' ' from to_char(it_installment_date, 'Month')) || '-' || to_char(it_installment_date, 'YYYY'),
+    //     to_char(it_installment_date, 'YYYY-MM')
+    // ORDER BY
+    //     to_char(it_installment_date, 'YYYY-MM') DESC;
+    // `);
+    //     return { rows, rowCount };
   }
 }
