@@ -37,7 +37,7 @@ export class InstallmentTimelineRepository {
         ld_id: lends.ld_id,
         ld_borrower_name: lends.ld_borrower_name,
         ld_borrower_phoneno: lends.ld_borrower_phoneno,
-        it_term_amount: sql`ROUND(it_term_amount, 3)`,
+        it_term_amount: sql`ROUND(it_term_amount, 2)`,
       })
       .from(installmentTimelines)
       .innerJoin(lends, eq(installmentTimelines.it_lend_id, lends.ld_id))

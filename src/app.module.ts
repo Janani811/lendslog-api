@@ -6,10 +6,12 @@ import { DatabaseModule } from './database/database.module';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { LendsModule } from './modules/lends/lends.module';
+import { NotificationModule } from './notification/notification.module';
+import { CronjobsModule } from './cronjobs/cronjobs.module';
 
 import { AppController } from './app.controller';
+
 import { AppService } from './app.service';
-import { CronjobsModule } from './cronjobs/cronjobs.module';
 import { NotificationService } from './notification/notification.service';
 
 @Module({
@@ -21,6 +23,7 @@ import { NotificationService } from './notification/notification.service';
     AuthModule,
     LendsModule,
     CronjobsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, NotificationService],

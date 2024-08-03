@@ -5,12 +5,16 @@ import { InstallmentTimelineRepository } from 'src/database/repositories/Install
 import { LendsRepository } from '../../database/repositories/Lends.repository';
 
 import { PaymentTerm, Status } from '../../../utils/enums';
+import { UserRepository } from 'src/database/repositories/User.repository';
+import { NotificationRepository } from 'src/database/repositories/Notification.repository';
 
 @Injectable()
 export class LendsService {
   constructor(
     private lendsRepository: LendsRepository,
     private installmentRepository: InstallmentTimelineRepository,
+    private userRepository: UserRepository,
+    private notificationRepository: NotificationRepository,
   ) {}
 
   // get all lends
@@ -65,7 +69,7 @@ export class LendsService {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
-  // create lend
+  // update lend
   async update(dto: any, id: number) {
     try {
       return await this.lendsRepository.updateLend(dto, id);
@@ -131,7 +135,44 @@ export class LendsService {
   // get today pending installment_timelines
   async getTodayInstallments(user_id: number) {
     try {
-      return await this.installmentRepository.getAllPending(user_id);
+      const lends = await this.installmentRepository.getAllPending(user_id);
+      const groupedResponse = lends.reduce((acc, installment) => {
+        const {
+          ld_id,
+          ld_borrower_name,
+          ld_borrower_phoneno,
+          it_id,
+          it_installment_date,
+          it_installement_status,
+          it_term_amount,
+        } = installment;
+
+        if (!acc[ld_id]) {
+          acc[ld_id] = {
+            ld_id,
+            ld_borrower_name,
+            ld_borrower_phoneno,
+            it_term_amount,
+            pending_installments: [],
+            total_pending_amount: 0,
+          };
+        }
+
+        acc[ld_id].pending_installments.push({
+          it_id,
+          it_installment_date,
+          it_installement_status,
+          it_term_amount,
+        });
+
+        if (it_term_amount) {
+          acc[ld_id].total_pending_amount += Number(it_term_amount);
+        }
+
+        return acc;
+      }, {});
+      const result = Object.values(groupedResponse);
+      return result;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }

@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as firebase from 'firebase-admin';
+
+import { NotificationRepository } from 'src/database/repositories/Notification.repository';
 
 @Injectable()
 export class NotificationService {
+  constructor(private notificationRepository: NotificationRepository) {}
   //   acceptPushNotification = async (
   //     user: any,
   //     notification_dto: NotificationDto,
@@ -65,4 +68,14 @@ export class NotificationService {
       return error;
     }
   };
+
+  async getAll(data: { nt_user_id: number }) {
+    try {
+      const todayNotifications = await this.notificationRepository.getAll(data, 'today');
+      const olderNotifications = await this.notificationRepository.getAll(data, 'older');
+      return { todayNotifications, olderNotifications };
+    } catch (e) {
+      throw new HttpException(e.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+    }
+  }
 }

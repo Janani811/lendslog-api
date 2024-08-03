@@ -115,7 +115,7 @@ export const lends = pgTable('lends', {
   ld_updated_at: timestamp('ld_updated_at', {
     mode: 'string',
   }).$onUpdate(() => sql`now()`),
-  ld_lend_status: integer('ld_lend_status').default(1),
+  ld_lend_status: integer('ld_lend_status').default(1), // 1=Pending, 2=Completed (installment payments)
   ld_is_deleted: integer('ld_is_deleted').default(0),
 });
 
@@ -148,3 +148,21 @@ export const installmentTimelineRelations = relations(installmentTimelines, ({ o
     references: [lends.ld_id],
   }),
 }));
+
+// Notifications
+export const notification = pgTable('notification', {
+  nt_id: serial('nt_id').primaryKey(),
+  nt_user_id: integer('nt_user_id').notNull(), // users id
+  nt_status: integer('nt_status').default(1), // 1=Pending, 2=Send
+  nt_created_at: timestamp('nt_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  nt_updated_at: timestamp('nt_updated_at', {
+    mode: 'string',
+  }).$onUpdate(() => sql`now()`),
+  nt_is_deleted: integer('nt_is_deleted').default(0),
+  nt_text: text('nt_text'),
+  nt_pending_count: integer('nt_pending_count'),
+});
+
+export type InsertNotification = InferInsertModel<typeof notification>;

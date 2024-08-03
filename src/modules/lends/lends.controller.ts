@@ -30,7 +30,7 @@ export class LendsController {
   async getTodayInstallments(@Request() req, @Response() res) {
     try {
       const lends = await this.lendsService.getTodayInstallments(req.user.us_id);
-      return res.status(200).json(lends);
+      return res.status(200).json({ todayLends: lends });
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }
@@ -84,6 +84,7 @@ export class LendsController {
         ld_lend_amount: dto.ld_lend_amount,
         ld_principal_repayment: ld_principal_repayment,
         ld_start_date: new Date(dto.ld_start_date),
+        ld_lend_status: 1,
       });
 
       await this.lendsService.createInstallementTimeLines({
