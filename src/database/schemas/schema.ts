@@ -166,3 +166,20 @@ export const notification = pgTable('notification', {
 });
 
 export type InsertNotification = InferInsertModel<typeof notification>;
+
+// NotificationToken
+export const notificationToken = pgTable('notificationToken', {
+  ntto_id: serial('ntto_id').primaryKey(),
+  ntto_user_id: integer('ntto_user_id').notNull(), // users id(us_id)
+  ntto_notification_id: integer('ntto_notification_id'), // notification id(nt_id)
+  ntto_token: varchar('ntto_token'),
+  ntto_status: integer('ntto_status').default(1), // 1=Active, 2=Inactive
+  ntto_created_at: timestamp('ntto_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  ntto_updated_at: timestamp('ntto_updated_at', {
+    mode: 'string',
+  }).$onUpdate(() => sql`now()`),
+});
+
+export type InsertNotificationToken = InferInsertModel<typeof notificationToken>;
