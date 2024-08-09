@@ -165,6 +165,11 @@ export const notification = pgTable('notification', {
   nt_pending_count: integer('nt_pending_count'),
 });
 
+// Notification Relations
+export const notificationRelations = relations(notification, ({ many }) => ({
+  notificationToken: many(notificationToken),
+}));
+
 export type InsertNotification = InferInsertModel<typeof notification>;
 
 // NotificationToken
@@ -173,7 +178,7 @@ export const notificationToken = pgTable('notificationToken', {
   ntto_user_id: integer('ntto_user_id').notNull(), // users id(us_id)
   ntto_notification_id: integer('ntto_notification_id'), // notification id(nt_id)
   ntto_token: varchar('ntto_token'),
-  ntto_status: integer('ntto_status').default(1), // 1=Active, 2=Inactive
+  ntto_status: integer('ntto_status').default(1), // 0=InActive, 1=Active
   ntto_created_at: timestamp('ntto_created_at', { mode: 'string' })
     .notNull()
     .default(sql`now()`),
@@ -182,4 +187,13 @@ export const notificationToken = pgTable('notificationToken', {
   }).$onUpdate(() => sql`now()`),
 });
 
+// Notification Token Relations
+export const notificationTokenRelations = relations(notificationToken, ({ one }) => ({
+  notification: one(notification, {
+    fields: [notificationToken.ntto_user_id],
+    references: [notification.nt_user_id],
+  }),
+}));
+
 export type InsertNotificationToken = InferInsertModel<typeof notificationToken>;
+export type UpdateNotificationToken = InferSelectModel<typeof notificationToken>;

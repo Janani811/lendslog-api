@@ -10,7 +10,7 @@ import { NotificationController } from './notification.controller';
 @Module({
   imports: [DatabaseModule],
   controllers: [NotificationController],
-  providers: [NotificationService, NotificationService],
+  providers: [NotificationService],
 })
 export class NotificationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
