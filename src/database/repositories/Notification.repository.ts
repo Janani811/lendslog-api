@@ -1,10 +1,10 @@
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Inject } from '@nestjs/common';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
 
-import { InsertNotification, notification } from '../schemas/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { InsertNotification, notification, notificationToken } from '../schemas/schema';
 
 export class NotificationRepository {
   constructor(
@@ -24,5 +24,22 @@ export class NotificationRepository {
           : sql`DATE(nt_created_at) != CURRENT_DATE`,
       ),
     });
+  }
+
+  async getTodayNotifications() {
+    return this.dbObject.db.query.notification.findMany({
+      where: and(eq(notification.nt_status, 1), sql`DATE(nt_created_at) = CURRENT_DATE`),
+      with: {
+        notificationToken: { where: eq(notificationToken.ntto_status, 1) },
+      },
+    });
+  }
+
+  async update(data: any, ids: Array<number>) {
+    return await this.dbObject.db
+      .update(notification)
+      .set(data)
+      .where(inArray(notification.nt_id, ids))
+      .returning();
   }
 }
