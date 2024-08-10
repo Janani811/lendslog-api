@@ -29,7 +29,7 @@ export class CronjobsService {
     }
   }
   // @Cron('0,15,30,45 55 01 * * *')
-  @Cron(CronExpression.EVERY_DAY_AT_9AM)
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
   async sendNotification() {
     const notificationIds = [];
     const all = await this.notificationRepository.getTodayNotifications();

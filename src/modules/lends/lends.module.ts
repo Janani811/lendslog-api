@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import * as moment from 'moment';
 
 import { DatabaseModule } from '../../database/database.module';
 
@@ -11,7 +12,14 @@ import { NotificationService } from '../../notification/notification.service';
 @Module({
   imports: [DatabaseModule],
   controllers: [LendsController],
-  providers: [LendsService, NotificationService],
+  providers: [
+    LendsService,
+    NotificationService,
+    {
+      provide: 'MomentWrapper',
+      useValue: moment,
+    },
+  ],
 })
 export class LendsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -1,5 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as moment from 'moment';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { InstallmentTimelineRepository } from 'src/database/repositories/InstallmentTimelines.repository';
 import { LendsRepository } from '../../database/repositories/Lends.repository';
@@ -15,6 +14,7 @@ export class LendsService {
     private installmentRepository: InstallmentTimelineRepository,
     private userRepository: UserRepository,
     private notificationRepository: NotificationRepository,
+    @Inject('MomentWrapper') private readonly moment: any,
   ) {}
 
   // get all lends
@@ -101,7 +101,7 @@ export class LendsService {
         count = 31; // constant days in month
       }
       const estimatedInstallmentDates = [];
-      let lastDate = moment(new Date(startDate), 'YYYY-MM-DD');
+      let lastDate = this.moment(new Date(startDate), 'YYYY-MM-DD');
       estimatedInstallmentDates.push({
         it_installment_date: lastDate.toDate(),
         it_lend_id,
@@ -110,7 +110,7 @@ export class LendsService {
       });
       for (let i = 2; i <= totalWeeksOrMonths; i++) {
         const currentDate = lastDate.add(count, 'days').toDate();
-        lastDate = moment(lastDate, 'YYYY-MM-DD');
+        lastDate = this.moment(lastDate, 'YYYY-MM-DD');
         estimatedInstallmentDates.push({
           it_installment_date: currentDate,
           it_lend_id,
