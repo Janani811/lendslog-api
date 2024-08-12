@@ -48,21 +48,16 @@ export class NotificationService {
       throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
     }
   };
-  sendPush = async (token: string, title: string, body: string): Promise<void> => {
+  sendPush = async (token: string, title: string, body: string) => {
     try {
-      console.log(body, title);
-      await firebase
-        .messaging()
-        .send({
-          notification: { title, body },
-          token,
-          android: { priority: 'high' },
-          data: { screen: '/dashboard/notification' },
-        })
-        .catch((error: any) => {
-          console.error(error);
-        });
+      await firebase.messaging().send({
+        notification: { title, body },
+        token,
+        android: { priority: 'high' },
+        data: { screen: '/dashboard/notification' },
+      });
     } catch (error) {
+      console.log(error);
       throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
     }
   };
