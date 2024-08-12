@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+// import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { NotificationRepository } from 'src/database/repositories/Notification.repository';
 import { UserRepository } from 'src/database/repositories/User.repository';
@@ -13,11 +13,12 @@ export class CronjobsService {
     private notificationRepository: NotificationRepository,
     private notificationService: NotificationService,
   ) {}
-  @Cron('40 2 * * *')
+  // @Cron('40 2 * * *')
   async openForBusiness() {
     console.log('Delicious cakes is open for business...');
+    return true;
   }
-  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  // @Cron(CronExpression.EVERY_DAY_AT_8AM)
   async generateNotifications() {
     console.log('Delicious cakes is open for sdd...');
     const users = await this.userRepository.getUserWithLendsCount();
@@ -28,9 +29,10 @@ export class CronjobsService {
         nt_user_id: users[i].us_id,
       });
     }
+    return true;
   }
   // @Cron('0,15,30,45 55 01 * * *')
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  // @Cron(CronExpression.EVERY_DAY_AT_10AM)
   async sendNotification() {
     const notificationIds = [];
     const all = await this.notificationRepository.getTodayNotifications();
@@ -46,5 +48,6 @@ export class CronjobsService {
     if (notificationIds.length) {
       await this.notificationRepository.update({ nt_status: 2 }, notificationIds);
     }
+    return true;
   }
 }
