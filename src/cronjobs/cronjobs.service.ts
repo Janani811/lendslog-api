@@ -13,7 +13,7 @@ export class CronjobsService {
     private notificationRepository: NotificationRepository,
     private notificationService: NotificationService,
   ) {}
-  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  @Cron('40 2 * * *')
   async openForBusiness() {
     console.log('Delicious cakes is open for business...');
   }

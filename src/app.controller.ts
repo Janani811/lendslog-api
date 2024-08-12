@@ -8,6 +8,6 @@ export class AppController {
 
   @Get()
   getHello() {
-    return this.appService.getUsers();
+    return 'Hello from lendslog api';
   }
 }
