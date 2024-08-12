@@ -13,12 +13,13 @@ export class CronjobsService {
     private notificationRepository: NotificationRepository,
     private notificationService: NotificationService,
   ) {}
-  // @Cron(CronExpression.EVERY_DAY_AT_9AM)
-  // async openForBusiness() {
-  //   console.log('Delicious cakes is open for business...');
-  // }
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  async openForBusiness() {
+    console.log('Delicious cakes is open for business...');
+  }
   @Cron(CronExpression.EVERY_DAY_AT_8AM)
   async generateNotifications() {
+    console.log('Delicious cakes is open for sdd...');
     const users = await this.userRepository.getUserWithLendsCount();
     for (let i = 0; i < users.length; i++) {
       await this.notificationRepository.add({
