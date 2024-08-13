@@ -17,7 +17,6 @@ export class UserRepository {
   }
 
   getUserWithLendsCount() {
-    console.log('getUserWithLendsCount');
     return this.dbObject.db
       .select({
         // count: sql`count(${lends.ld_id})`.mapWith(Number),

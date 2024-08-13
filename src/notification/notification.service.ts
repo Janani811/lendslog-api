@@ -50,7 +50,6 @@ export class NotificationService {
   };
   sendPush = async (token: string, title: string, body: string) => {
     try {
-      console.log('send push - 53 line');
       await firebase.messaging().send({
         notification: { title, body },
         token,

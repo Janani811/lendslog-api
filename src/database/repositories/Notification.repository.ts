@@ -27,7 +27,6 @@ export class NotificationRepository {
   }
 
   async getTodayNotifications() {
-    console.log('getTodayNotifications');
     return this.dbObject.db.query.notification.findMany({
       where: and(eq(notification.nt_status, 1), sql`DATE(nt_created_at) = CURRENT_DATE`),
       with: {
@@ -37,7 +36,6 @@ export class NotificationRepository {
   }
 
   async update(data: any, ids: Array<number>) {
-    console.log('Notification update');
     return await this.dbObject.db
       .update(notification)
       .set(data)

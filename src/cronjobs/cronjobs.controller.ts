@@ -9,11 +9,11 @@ export class CronjobsController {
   @Get()
   async runCron() {
     try {
-      console.log('runCron');
+      console.log('********* Pending Notification Reminder Initiated ********');
       // res.status(200).json('Cron initiaited');
-      await this.cronjobsService.openForBusiness();
       await this.cronjobsService.generateNotifications();
       await this.cronjobsService.sendNotification();
+      console.log('********* Pending Notification Reminder Completed ********');
     } catch (error) {
       console.error(error);
     }
