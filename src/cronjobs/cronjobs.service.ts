@@ -17,7 +17,6 @@ export class CronjobsService {
   async openForBusiness() {
     try {
       console.log('Delicious cakes is open for business...');
-      return true;
     } catch (error) {
       throw error;
     }
@@ -36,7 +35,6 @@ export class CronjobsService {
           nt_user_id: users[i].us_id,
         });
       }
-      return true;
     } catch (error) {
       throw error;
     }
@@ -65,7 +63,6 @@ export class CronjobsService {
         console.log('64 line');
         await this.notificationRepository.update({ nt_status: 2 }, notificationIds);
       }
-      return true;
     } catch (error) {
       throw error;
     }
