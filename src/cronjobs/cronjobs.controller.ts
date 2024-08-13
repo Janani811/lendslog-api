@@ -1,4 +1,4 @@
-import { Controller, Get, Request, Response } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 import { CronjobsService } from './cronjobs.service';
 
