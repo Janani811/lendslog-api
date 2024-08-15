@@ -78,6 +78,15 @@ export class LendsService {
     }
   }
 
+  // update Installment Timelines
+  async updateInstallementTimeLines(dto: any, it_lend_id: number) {
+    try {
+      return await this.installmentRepository.updateByLendId(dto, it_lend_id);
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   // create installment timelines
   async createInstallementTimeLines({
     it_lend_id,

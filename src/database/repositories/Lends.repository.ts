@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -15,7 +15,7 @@ export class LendsRepository {
   // get all lends based on ld_lender_id
   async getAll(args: { ld_lender_id: number }) {
     return this.dbObject.db.query.lends.findMany({
-      where: eq(lends.ld_lender_id, args.ld_lender_id),
+      where: and(eq(lends.ld_lender_id, args.ld_lender_id), eq(lends.ld_is_deleted, 0)),
       with: {
         installmentTimelines: {
           orderBy: asc(installmentTimelines.it_id),

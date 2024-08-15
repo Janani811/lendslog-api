@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Request, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Request, Response } from '@nestjs/common';
 
 import { LendsService } from './lends.service';
 import { NotificationService } from '../../notification/notification.service';
@@ -46,6 +46,23 @@ export class LendsController {
         return res.status(400).json({ error: 'The requested lend detail was not found' });
       }
       return res.status(200).json(lends);
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  @Delete(':ld_id')
+  async deleteLend(@Request() req, @Response() res, @Param() param) {
+    try {
+      const lends = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+      if (!lends) {
+        return res.status(400).json({ error: 'The requested lend detail was not found' });
+      }
+      await this.lendsService.updateInstallementTimeLines({ it_is_deleted: 1 }, param.ld_id);
+      await this.lendsService.update({ ld_is_deleted: 1 }, param.ld_id);
+      return res.status(200).json({ message: 'Deleted successfully' });
     } catch (error) {
       return res.status(403).json({ error: error.message });
     }

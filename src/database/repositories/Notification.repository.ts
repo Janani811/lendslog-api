@@ -23,6 +23,9 @@ export class NotificationRepository {
           ? sql`DATE(nt_created_at) = CURRENT_DATE`
           : sql`DATE(nt_created_at) != CURRENT_DATE`,
       ),
+      extras: {
+        nt_created_at: sql`TO_CHAR(${notification.nt_created_at},'dd-mm-yyyy')`.as('nt_created_at'),
+      },
     });
   }
 

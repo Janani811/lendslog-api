@@ -73,4 +73,12 @@ export class InstallmentTimelineRepository {
     // `);
     //     return { rows, rowCount };
   }
+
+  async updateByLendId(data: any, it_lend_id: number) {
+    return await this.dbObject.db
+      .update(installmentTimelines)
+      .set(data)
+      .where(eq(installmentTimelines.it_lend_id, Number(it_lend_id)))
+      .returning();
+  }
 }
