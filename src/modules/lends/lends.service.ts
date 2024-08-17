@@ -52,7 +52,7 @@ export class LendsService {
     }
   }
 
-  // get all lends
+  // get One lends
   async getOne(data) {
     try {
       return await this.lendsRepository.getOne(data);
@@ -79,9 +79,9 @@ export class LendsService {
   }
 
   // update Installment Timelines
-  async updateInstallementTimeLines(dto: any, it_lend_id: number) {
+  async updateInstallementTimeLines(dto: any, args: { it_lend_id: number; it_id?: number }) {
     try {
-      return await this.installmentRepository.updateByLendId(dto, it_lend_id);
+      return await this.installmentRepository.updateByLendId(dto, args);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
@@ -182,6 +182,14 @@ export class LendsService {
       }, {});
       const result = Object.values(groupedResponse);
       return result;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  // get specific pending installment
+  async getOnePendingInstallment(data) {
+    try {
+      return await this.installmentRepository.getOne(data);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }

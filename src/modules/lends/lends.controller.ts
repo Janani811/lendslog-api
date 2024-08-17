@@ -5,6 +5,8 @@ import { NotificationService } from '../../notification/notification.service';
 
 import { AddLend, EditLend } from './dto/lends.dto';
 
+import { Status } from 'utils/enums';
+
 @Controller('lends')
 export class LendsController {
   constructor(
@@ -51,6 +53,48 @@ export class LendsController {
     }
   }
 
+  @Put(':ld_id/installment/:it_id')
+  async payInstallment(@Request() req, @Response() res, @Param() param) {
+    try {
+      // check if lend exist
+      const lend = await this.lendsService.getOne({
+        ld_id: param.ld_id,
+      });
+      // return message if not exist
+      if (!lend) {
+        return res.status(400).json({ error: 'The requested lend detail was not found' });
+      }
+      // check if installment exist
+      const installment = await this.lendsService.getOnePendingInstallment({
+        it_id: param.it_id,
+      });
+      // return message is not exist
+      if (!installment) {
+        return res
+          .status(400)
+          .json({ error: 'The requested pending installment detail was not found' });
+      }
+      // update installment timeline as completed
+      await this.lendsService.updateInstallementTimeLines(
+        { it_installement_status: Status.Completed },
+        { it_lend_id: param.ld_id, it_id: installment.it_id },
+      );
+      if (installment.it_order == Number(lend.ld_total_weeks_or_month)) {
+        await this.lendsService.update({ ld_lend_status: 2 }, param.ld_id);
+      }
+      // fetch pending installment lends
+      const lendsWithPendingInstallments = await this.lendsService.getTodayInstallments(
+        req.user.us_id,
+      );
+      return res
+        .status(200)
+        .json({ todayLends: lendsWithPendingInstallments, message: 'Updated successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
   @Delete(':ld_id')
   async deleteLend(@Request() req, @Response() res, @Param() param) {
     try {
@@ -60,7 +104,10 @@ export class LendsController {
       if (!lends) {
         return res.status(400).json({ error: 'The requested lend detail was not found' });
       }
-      await this.lendsService.updateInstallementTimeLines({ it_is_deleted: 1 }, param.ld_id);
+      await this.lendsService.updateInstallementTimeLines(
+        { it_is_deleted: 1 },
+        { it_lend_id: param.ld_id },
+      );
       await this.lendsService.update({ ld_is_deleted: 1 }, param.ld_id);
       return res.status(200).json({ message: 'Deleted successfully' });
     } catch (error) {

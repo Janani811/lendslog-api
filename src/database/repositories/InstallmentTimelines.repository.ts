@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -74,11 +74,23 @@ export class InstallmentTimelineRepository {
     //     return { rows, rowCount };
   }
 
-  async updateByLendId(data: any, it_lend_id: number) {
+  async updateByLendId(data: any, args: { it_lend_id: number; it_id?: number }) {
+    console.log(data, args);
     return await this.dbObject.db
       .update(installmentTimelines)
       .set(data)
-      .where(eq(installmentTimelines.it_lend_id, Number(it_lend_id)))
+      .where(
+        and(
+          eq(installmentTimelines.it_lend_id, Number(args.it_lend_id)),
+          args?.it_id && eq(installmentTimelines.it_id, Number(args.it_id)),
+        ),
+      )
       .returning();
+  }
+  // get specific pending Installment based on it_id
+  async getOne(args: { it_id: number }) {
+    return this.dbObject.db.query.installmentTimelines.findFirst({
+      where: eq(installmentTimelines.it_id, args.it_id),
+    });
   }
 }
