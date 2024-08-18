@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { and, asc, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, like, ilike, or, sql, SQL } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -13,10 +13,18 @@ export class LendsRepository {
   ) {}
 
   // get all lends based on ld_lender_id
-  async getAll(args: { ld_lender_id: number }) {
+  async getAll(args: { ld_lender_id: number; search?: string }) {
+    const query: SQL[] = [eq(lends.ld_lender_id, args.ld_lender_id), eq(lends.ld_is_deleted, 0)];
+    if (args.search.length)
+      query.push(
+        or(
+          ilike(lends.ld_borrower_name, `%${args.search}%`),
+          like(lends.ld_borrower_phoneno, `%${args.search}%`),
+        ),
+      );
     return this.dbObject.db.query.lends.findMany({
       orderBy: desc(lends.ld_id),
-      where: and(eq(lends.ld_lender_id, args.ld_lender_id), eq(lends.ld_is_deleted, 0)),
+      where: and(...query),
       with: {
         installmentTimelines: {
           orderBy: asc(installmentTimelines.it_id),

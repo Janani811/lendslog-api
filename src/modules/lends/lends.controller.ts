@@ -20,6 +20,7 @@ export class LendsController {
     try {
       const { allLends, weekLends, monthLends } = await this.lendsService.getAll({
         ld_lender_id: req.user.us_id,
+        search: req.query?.search || '',
       });
       // await this.notificationService.sendPush();
       return res.status(200).json({ allLends, weekLends, monthLends });
