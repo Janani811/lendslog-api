@@ -15,6 +15,7 @@ export class LendsRepository {
   // get all lends based on ld_lender_id
   async getAll(args: { ld_lender_id: number }) {
     return this.dbObject.db.query.lends.findMany({
+      orderBy: asc(lends.ld_id),
       where: and(eq(lends.ld_lender_id, args.ld_lender_id), eq(lends.ld_is_deleted, 0)),
       with: {
         installmentTimelines: {

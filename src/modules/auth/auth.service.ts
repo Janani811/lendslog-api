@@ -124,6 +124,7 @@ export class AuthService {
     try {
       console.log(dto);
       const existUser = await this.usersRepository.getOne({ id: us_id });
+      console.log('first')
       if (!existUser) {
         throw new HttpException("Oops!, We can't find you in our database", HttpStatus.BAD_REQUEST);
       }
@@ -131,6 +132,7 @@ export class AuthService {
       const user = await this.usersRepository.getOne({ id: us_id });
       return user;
     } catch (e) {
+      console.log(e)
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }

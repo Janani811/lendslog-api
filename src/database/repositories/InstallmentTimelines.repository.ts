@@ -42,7 +42,7 @@ export class InstallmentTimelineRepository {
       .from(installmentTimelines)
       .innerJoin(lends, eq(installmentTimelines.it_lend_id, lends.ld_id))
       .where(
-        sql`DATE(it_installment_date) <= CURRENT_DATE and it_installement_status = 1 and ld_lender_id = ${user_id}`,
+        sql`DATE(it_installment_date) <= CURRENT_DATE and it_installement_status = 1 and ld_lender_id = ${user_id} and it_is_deleted = 0`,
       );
     //     const { rows, rowCount } = await this.dbObject.db.execute(sql`SELECT
     //     trim(both ' ' from to_char(it_installment_date, 'Month')) || '-' || to_char(it_installment_date, 'YYYY') as month_year,

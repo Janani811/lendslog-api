@@ -78,7 +78,7 @@ export class AuthController {
   @Put('edit-profile')
   async editProfile(@Body() dto: UpdateUserDto, @Request() req, @Response() res) {
     try {
-      console.log(dto);
+      console.log('dto');
       const user = await this.authService.editProfile(req.user.us_id, dto);
       console.log(user);
       return res.json({ status: 200, message: 'Profile updated successfully', user });

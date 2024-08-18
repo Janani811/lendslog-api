@@ -30,7 +30,6 @@ export class UpdateUserDto {
   @IsNotEmpty()
   us_name: string;
   @IsString()
-  @IsNotEmpty()
   us_username: string;
   @IsString()
   @IsNotEmpty()

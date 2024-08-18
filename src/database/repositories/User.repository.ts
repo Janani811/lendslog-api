@@ -30,7 +30,7 @@ export class UserRepository {
       .where(
         and(
           eq(lends.ld_lend_status, 1),
-          sql`DATE(it_installment_date) <= CURRENT_DATE and it_installement_status = 1`,
+          sql`DATE(it_installment_date) <= CURRENT_DATE and it_installement_status = 1 and it_is_deleted = 0`,
         ),
       )
       .groupBy(users.us_id);
