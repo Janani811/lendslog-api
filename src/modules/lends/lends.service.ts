@@ -79,7 +79,7 @@ export class LendsService {
   }
 
   // update Installment Timelines
-  async updateInstallementTimeLines(dto: any, args: { it_lend_id: number; it_id?: number }) {
+  async updateInstallementTimeLines(dto: any, args: { it_lend_id: number; it_ids?: number[] }) {
     try {
       return await this.installmentRepository.updateByLendId(dto, args);
     } catch (e) {
@@ -187,9 +187,9 @@ export class LendsService {
     }
   }
   // get specific pending installment
-  async getOnePendingInstallment(data) {
+  async getPendingInstallment(data: { ld_id: number; status: number }) {
     try {
-      return await this.installmentRepository.getOne(data);
+      return await this.installmentRepository.getInstallmentStatusCount(data);
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }

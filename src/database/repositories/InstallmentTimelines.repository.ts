@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -74,7 +74,7 @@ export class InstallmentTimelineRepository {
     //     return { rows, rowCount };
   }
 
-  async updateByLendId(data: any, args: { it_lend_id: number; it_id?: number }) {
+  async updateByLendId(data: any, args: { it_lend_id: number; it_ids?: number[] }) {
     console.log(data, args);
     return await this.dbObject.db
       .update(installmentTimelines)
@@ -82,7 +82,7 @@ export class InstallmentTimelineRepository {
       .where(
         and(
           eq(installmentTimelines.it_lend_id, Number(args.it_lend_id)),
-          args?.it_id && eq(installmentTimelines.it_id, Number(args.it_id)),
+          args?.it_ids.length && inArray(installmentTimelines.it_id, args.it_ids),
         ),
       )
       .returning();
@@ -92,5 +92,27 @@ export class InstallmentTimelineRepository {
     return this.dbObject.db.query.installmentTimelines.findFirst({
       where: eq(installmentTimelines.it_id, args.it_id),
     });
+  }
+  async getInstallmentStatusCount(args: { ld_id: number; status: number }) {
+    const result = await this.dbObject.db
+      .select({
+        count: sql`count(${installmentTimelines.it_id})`,
+      })
+      .from(installmentTimelines)
+      .where(
+        and(
+          eq(installmentTimelines.it_installement_status, args.status),
+          eq(installmentTimelines.it_lend_id, args.ld_id),
+        ),
+      )
+      .groupBy(installmentTimelines.it_lend_id);
+
+    // If the result is empty, return 0
+    if (result.length === 0) {
+      return 0;
+    }
+
+    // Return the count, assuming it will be the first item in the array
+    return result[0]?.count ?? 0;
   }
 }

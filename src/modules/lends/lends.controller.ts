@@ -53,9 +53,11 @@ export class LendsController {
     }
   }
 
-  @Put(':ld_id/installment/:it_id')
-  async payInstallment(@Request() req, @Response() res, @Param() param) {
+  @Put(':ld_id/installment')
+  async payInstallment(@Request() req, @Response() res, @Param() param, @Body() body) {
     try {
+      const data: number[] = body;
+
       // check if lend exist
       const lend = await this.lendsService.getOne({
         ld_id: param.ld_id,
@@ -64,24 +66,22 @@ export class LendsController {
       if (!lend) {
         return res.status(400).json({ error: 'The requested lend detail was not found' });
       }
-      // check if installment exist
-      const installment = await this.lendsService.getOnePendingInstallment({
-        it_id: param.it_id,
-      });
-      // return message is not exist
-      if (!installment) {
-        return res
-          .status(400)
-          .json({ error: 'The requested pending installment detail was not found' });
-      }
+
       // update installment timeline as completed
       await this.lendsService.updateInstallementTimeLines(
         { it_installement_status: Status.Completed },
-        { it_lend_id: param.ld_id, it_id: installment.it_id },
+        { it_lend_id: param.ld_id, it_ids: data },
       );
-      if (installment.it_order == Number(lend.ld_total_weeks_or_month)) {
+
+      const pendingInstallmentCount = await this.lendsService.getPendingInstallment({
+        ld_id: param.ld_id,
+        status: Status.Pending,
+      });
+
+      if (pendingInstallmentCount === 0) {
         await this.lendsService.update({ ld_lend_status: 2 }, param.ld_id);
       }
+
       // fetch pending installment lends
       const lendsWithPendingInstallments = await this.lendsService.getTodayInstallments(
         req.user.us_id,
@@ -90,7 +90,6 @@ export class LendsController {
         .status(200)
         .json({ todayLends: lendsWithPendingInstallments, message: 'Updated successfully' });
     } catch (error) {
-      console.log(error);
       return res.status(403).json({ error: error.message });
     }
   }
