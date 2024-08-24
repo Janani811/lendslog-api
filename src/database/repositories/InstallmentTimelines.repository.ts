@@ -82,7 +82,7 @@ export class InstallmentTimelineRepository {
       .where(
         and(
           eq(installmentTimelines.it_lend_id, Number(args.it_lend_id)),
-          args?.it_ids.length && inArray(installmentTimelines.it_id, args.it_ids),
+          args?.it_ids && args?.it_ids.length && inArray(installmentTimelines.it_id, args.it_ids),
         ),
       )
       .returning();

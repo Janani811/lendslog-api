@@ -67,7 +67,7 @@ export class LendsController {
       if (!lend) {
         return res.status(400).json({ error: 'The requested lend detail was not found' });
       }
-
+      console.log(data);
       // update installment timeline as completed
       await this.lendsService.updateInstallementTimeLines(
         { it_installement_status: Status.Completed },
@@ -111,6 +111,7 @@ export class LendsController {
       await this.lendsService.update({ ld_is_deleted: 1 }, param.ld_id);
       return res.status(200).json({ message: 'Deleted successfully' });
     } catch (error) {
+      console.log(error);
       return res.status(403).json({ error: error.message });
     }
   }
