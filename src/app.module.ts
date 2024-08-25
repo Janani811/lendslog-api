@@ -13,6 +13,7 @@ import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
 import { NotificationService } from './notification/notification.service';
+import moment from 'moment';
 
 @Module({
   imports: [
@@ -26,6 +27,13 @@ import { NotificationService } from './notification/notification.service';
     NotificationModule,
   ],
   controllers: [AppController],
-  providers: [AppService, NotificationService],
+  providers: [
+    AppService,
+    NotificationService,
+    {
+      provide: 'MomentWrapper',
+      useValue: moment,
+    },
+  ],
 })
 export class AppModule {}
