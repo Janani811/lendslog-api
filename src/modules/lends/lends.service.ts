@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { InstallmentTimelineRepository } from 'src/database/repositories/InstallmentTimelines.repository';
 import { LendsRepository } from '../../database/repositories/Lends.repository';
