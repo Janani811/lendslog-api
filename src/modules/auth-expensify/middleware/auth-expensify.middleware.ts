@@ -3,12 +3,12 @@ import { NextFunction, Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { AuthService } from '../auth.service';
+import { AuthExpensifyService } from '../auth-expensify.service';
 
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
+export class AuthExpensifyMiddleware implements NestMiddleware {
   constructor(
-    private readonly authService: AuthService,
+    private readonly authService: AuthExpensifyService,
     private config: ConfigService,
     private jwtService: JwtService,
   ) {}
