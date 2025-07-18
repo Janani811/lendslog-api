@@ -8,6 +8,12 @@ import { SendVerifyDto, SignInDto, SignUpDto, UpdateUserDto, VerifyDto } from '.
 export class AuthExpensifyController {
   constructor(private authService: AuthExpensifyService) {}
 
+  @Get('/data')
+  getAll(@Request() req) {
+    console.log(req.user);
+    return req.user;
+  }
+
   @Get('me')
   async getProfile(@Request() req, @Response() res) {
     try {

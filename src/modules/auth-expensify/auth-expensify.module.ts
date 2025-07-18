@@ -9,6 +9,7 @@ import { AuthExpensifyMiddleware } from './middleware/auth-expensify.middleware'
 
 import { AuthExpensifyService } from './auth-expensify.service';
 import { TwilioService } from '../auth/twilio.service';
+import { ConfigService } from '@nestjs/config';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { TwilioService } from '../auth/twilio.service';
   exports: [JwtService, AuthExpensifyService, AuthExpensifyMiddleware],
 })
 export class AuthExpensifyModule implements NestModule {
+  constructor(private config: ConfigService) {}
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthExpensifyMiddleware)
