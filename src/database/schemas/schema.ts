@@ -197,3 +197,22 @@ export const notificationTokenRelations = relations(notificationToken, ({ one })
 
 export type InsertNotificationToken = InferInsertModel<typeof notificationToken>;
 export type UpdateNotificationToken = InferSelectModel<typeof notificationToken>;
+
+export const expensify_users = pgTable('exp_users', {
+  exp_us_id: serial('exp_us_id').primaryKey(),
+  exp_us_clerk_id: varchar('exp_us_clerk_id', { length: 255 }).notNull().unique(),
+  exp_us_name: text('exp_us_name'),
+  exp_us_email: text('exp_us_email'),
+  exp_us_phone_no: text('exp_phone_no'),
+  exp_us_is_deleted: boolean('exp_us_is_deleted').default(false),
+  exp_us_profile_url: text('exp_us_profile_url'),
+  exp_us_created_at: timestamp('exp_us_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  exp_us_updated_at: timestamp('exp_us_updated_at', {
+    mode: 'string',
+  }).$onUpdate(() => sql`now()`),
+});
+
+export type InsertExpensifyUser = InferInsertModel<typeof expensify_users>;
+export type SelectExpensifyUser = InferSelectModel<typeof expensify_users>;

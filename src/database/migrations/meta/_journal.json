@@ -1,1 +1,27 @@
-{"version":"1","dialect":"postgresql","entries":[]}
+{
+  "version": "1",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1752907985390,
+      "tag": "0000_curved_anthem",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752908401747,
+      "tag": "0001_useful_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752909906389,
+      "tag": "0002_broad_expediter",
+      "breakpoints": true
+    }
+  ]
+}

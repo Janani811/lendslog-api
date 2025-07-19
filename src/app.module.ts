@@ -13,7 +13,7 @@ import { AppController } from './app.controller';
 
 import { AppService } from './app.service';
 import { NotificationService } from './notification/notification.service';
-import { AuthExpensifyModule } from './modules/auth-expensify/auth-expensify.module';
+import { ExpensifyModule } from './modules/auth-expensify/auth-expensify.module';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import { AuthExpensifyModule } from './modules/auth-expensify/auth-expensify.mod
     LendsModule,
     CronjobsModule,
     NotificationModule,
-    AuthExpensifyModule,
+    ExpensifyModule,
   ],
   controllers: [AppController],
   providers: [AppService, NotificationService],

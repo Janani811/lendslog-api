@@ -72,3 +72,15 @@ export class VerifyDto {
   @IsNotEmpty()
   code: string;
 }
+
+export class ExpensifySignUpDto {
+  email?: string;
+  id?: string;
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsNotEmpty()
+  phone?: string;
+  delete?: boolean;
+}

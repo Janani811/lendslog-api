@@ -1,3 +1,4 @@
+import { ExpensifyUserRepository } from './ExpensifyUser.repository';
 import { InstallmentTimelineRepository } from './InstallmentTimelines.repository';
 import { LendsRepository } from './Lends.repository';
 import { NotificationRepository } from './Notification.repository';
@@ -10,4 +11,5 @@ export const repositories = [
   InstallmentTimelineRepository,
   NotificationRepository,
   NotificationTokenRepository,
+  ExpensifyUserRepository,
 ];
