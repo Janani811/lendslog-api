@@ -1,10 +1,13 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, Res } from '@nestjs/common';
 
 import { ExpensifyService } from './expensify.service';
 
 import { verifyWebhook } from '@clerk/backend/webhooks';
 import { UserJSON } from '@clerk/backend';
 import * as Express from 'express';
+import { ExpressWithUser } from './type';
+import { InsertExpensifyTransactions } from 'src/database/schemas/schema';
+import { TransactionDto } from './dto/auth.dto';
 
 @Controller('expensify')
 export class ExpensifyController {
@@ -64,6 +67,92 @@ export class ExpensifyController {
           break;
       }
       return res.status(200).json({ message: 'User response received' });
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  @Get('transactions')
+  async getTransactions(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+        query,
+      } = req;
+      const { startDate, endDate } = query as { startDate: string; endDate: string };
+      const data = await this.authService.getAllTransactions(exp_us_id, { startDate, endDate });
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  @Get('transaction/:id')
+  async getTransaction(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const { params } = req;
+      const { id } = params as unknown as { id: number };
+      const [data] = await this.authService.getTransaction(id);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  @Put('transaction/:id')
+  async editTransaction(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() body: TransactionDto,
+  ) {
+    try {
+      const { params } = req;
+      const { id } = params as unknown as { id: number };
+
+      if (body.exp_tc_id === undefined || body.exp_tt_id === undefined) {
+        return res.status(400).json({ error: 'Missing required fields: exp_tc_id or exp_tt_id' });
+      }
+
+      const insertBody = body as unknown as InsertExpensifyTransactions;
+      const [data] = await this.authService.editTransaction(id, insertBody);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  @Post('transactions')
+  async createTransaction(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() body: TransactionDto,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      body.exp_ts_user_id = exp_us_id;
+
+      if (body.exp_tc_id === undefined || body.exp_tt_id === undefined) {
+        return res.status(400).json({ error: 'Missing required fields: exp_tc_id or exp_tt_id' });
+      }
+
+      const insertBody = body as unknown as InsertExpensifyTransactions;
+      const data = await this.authService.createTransaction(insertBody);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+  @Get('categories')
+  async getCategories(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      const data = await this.authService.getAllCategories(exp_us_id);
+      return res.status(200).json(data);
     } catch (error) {
       console.log(error);
       return res.status(403).json({ error: error.message });

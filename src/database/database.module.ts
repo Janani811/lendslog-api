@@ -26,7 +26,7 @@ import { repositories } from './repositories';
           connection,
           db: drizzle(connection, {
             schema: schema,
-            logger: configService.get('NODE_ENV') == 'development',
+            logger: configService.get('NODE_ENV') != 'development',
           }),
         };
       },

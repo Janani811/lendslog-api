@@ -10,7 +10,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "format": "prettier . --write --log-level silent",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.json\" \"*.js\"",
     "lint": "eslint . --fix",
     "check-types": "tsc --noEmit",
     "test:unit": "jest --config ./test/config/jest-unit.json --passWithNoTests",

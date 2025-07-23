@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { ExpensifyService } from '../expensify.service';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 
 @Injectable()
 export class AuthExpensifyMiddleware implements NestMiddleware {
@@ -19,6 +20,7 @@ export class AuthExpensifyMiddleware implements NestMiddleware {
     private readonly authService: ExpensifyService,
     private config: ConfigService,
     private jwtService: JwtService,
+    private usersRepository: ExpensifyUserRepository,
   ) {
     this.clerkClient = createClerkClient({
       publishableKey: this.config.get('EXPENSIFY_CLERK_PUBLISHABLE_KEY'),
@@ -29,7 +31,6 @@ export class AuthExpensifyMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     const authHeaders = req.headers.authorization;
     const bearerToken = authHeaders?.startsWith('Bearer ') ? authHeaders.substring(7) : null;
-
     if (bearerToken) {
       let decoded = null;
       try {
@@ -44,12 +45,14 @@ export class AuthExpensifyMiddleware implements NestMiddleware {
         throw new UnauthorizedException('Invalid session');
       }
 
-      const user = await this.clerkClient.users.getUser(decoded.sub);
-      (req as any).user = user;
+      const clerkUser = await this.clerkClient.users.getUser(decoded.sub);
 
-      if (!user) {
+      if (!clerkUser) {
         throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
       }
+
+      const user = await this.usersRepository.getOne({ id: clerkUser.id });
+      (req as any).user = user;
 
       req['user'] = user;
       next();

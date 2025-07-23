@@ -246,7 +246,7 @@ export const expTransactions = pgTable('exp_transactions', {
     .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
   exp_ts_title: text('exp_ts_title').notNull(),
   exp_ts_amount: text('exp_ts_amount').notNull(),
-  exp_ts_date: text('exp_ts_date').notNull(),
+  exp_ts_date: date('exp_ts_date').notNull(),
   exp_ts_time: text('exp_ts_time').notNull(),
   exp_ts_note: text('exp_ts_note'),
   exp_ts_transaction_type: integer('exp_ts_transaction_type')
