@@ -216,3 +216,46 @@ export const expensify_users = pgTable('exp_users', {
 
 export type InsertExpensifyUser = InferInsertModel<typeof expensify_users>;
 export type SelectExpensifyUser = InferSelectModel<typeof expensify_users>;
+
+export const expTransactionTypes = pgTable('exp_transaction_types', {
+  exp_tt_id: serial('exp_tt_id').primaryKey(),
+  exp_tt_label: text('exp_tt_label').notNull(),
+});
+
+export type InsertExpensifyTransactionTypes = InferInsertModel<typeof expTransactionTypes>;
+export type SelectExpensifyTransactionTypes = InferSelectModel<typeof expTransactionTypes>;
+
+export const expTransactionCategories = pgTable('exp_transaction_categories', {
+  exp_tc_id: serial('exp_tc_id').primaryKey(),
+  exp_tc_label: text('exp_tc_label').notNull(),
+  exp_tc_icon: text('exp_tc_icon'),
+  exp_tc_user_id: integer('exp_tc_user_id'),
+});
+
+export type InsertExpensifyTransactionCategories = InferInsertModel<
+  typeof expTransactionCategories
+>;
+export type SelectExpensifyTransactionCategories = InferSelectModel<
+  typeof expTransactionCategories
+>;
+
+export const expTransactions = pgTable('exp_transactions', {
+  exp_ts_id: serial('exp_ts_id').primaryKey(),
+  exp_ts_user_id: integer('exp_ts_user_id')
+    .notNull()
+    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+  exp_ts_title: text('exp_ts_title').notNull(),
+  exp_ts_amount: text('exp_ts_amount').notNull(),
+  exp_ts_date: text('exp_ts_date').notNull(),
+  exp_ts_time: text('exp_ts_time').notNull(),
+  exp_ts_note: text('exp_ts_note'),
+  exp_ts_transaction_type: integer('exp_ts_transaction_type')
+    .notNull()
+    .references(() => expTransactionTypes.exp_tt_id),
+  exp_ts_category: integer('exp_ts_category')
+    .notNull()
+    .references(() => expTransactionCategories.exp_tc_id),
+});
+
+export type InsertExpensifyTransactions = InferInsertModel<typeof expTransactions>;
+export type SelectExpensifyTransactions = InferSelectModel<typeof expTransactions>;

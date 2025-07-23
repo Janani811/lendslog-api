@@ -22,6 +22,34 @@
       "when": 1752909906389,
       "tag": "0002_broad_expediter",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1753268564764,
+      "tag": "0003_friendly_proteus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1753268648744,
+      "tag": "0004_eager_franklin_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1753268848643,
+      "tag": "0005_dark_rachel_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1753269479906,
+      "tag": "0006_marvelous_magneto",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import { ExpensifySignUpDto } from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 
 @Injectable()
-export class AuthExpensifyService {
+export class ExpensifyService {
   constructor(
     private jwtService: JwtService,
     private config: ConfigService,

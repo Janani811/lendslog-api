@@ -1,14 +1,14 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
 
-import { AuthExpensifyService } from './auth-expensify.service';
+import { ExpensifyService } from './expensify.service';
 
 import { verifyWebhook } from '@clerk/backend/webhooks';
 import { UserJSON } from '@clerk/backend';
 import * as Express from 'express';
 
 @Controller('expensify')
-export class AuthExpensifyController {
-  constructor(private authService: AuthExpensifyService) {}
+export class ExpensifyController {
+  constructor(private authService: ExpensifyService) {}
 
   @Post('clerk/webhook')
   async getAll(@Req() req: Express.Request, @Res() res: Express.Response) {

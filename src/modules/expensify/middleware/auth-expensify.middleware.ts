@@ -9,14 +9,14 @@ import { NextFunction, Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { AuthExpensifyService } from '../auth-expensify.service';
+import { ExpensifyService } from '../expensify.service';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 
 @Injectable()
 export class AuthExpensifyMiddleware implements NestMiddleware {
   clerkClient;
   constructor(
-    private readonly authService: AuthExpensifyService,
+    private readonly authService: ExpensifyService,
     private config: ConfigService,
     private jwtService: JwtService,
   ) {
