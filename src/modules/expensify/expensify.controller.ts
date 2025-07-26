@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Post, Put, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 
 import { ExpensifyService } from './expensify.service';
 
@@ -6,12 +18,20 @@ import { verifyWebhook } from '@clerk/backend/webhooks';
 import { UserJSON } from '@clerk/backend';
 import * as Express from 'express';
 import { ExpressWithUser } from './type';
-import { InsertExpensifyTransactions } from 'src/database/schemas/schema';
-import { TransactionDto } from './dto/auth.dto';
+import {
+  InsertExpensifyBankAccounts,
+  InsertExpensifyTransactions,
+} from 'src/database/schemas/schema';
+import {
+  CreateBankAccountDto,
+  CreateStarredTransactionDto,
+  TransactionDto,
+  UpdateBankAccountDto,
+} from './dto/auth.dto';
 
 @Controller('expensify')
 export class ExpensifyController {
-  constructor(private authService: ExpensifyService) {}
+  constructor(private expensifyService: ExpensifyService) {}
 
   @Post('clerk/webhook')
   async getAll(@Req() req: Express.Request, @Res() res: Express.Response) {
@@ -55,13 +75,13 @@ export class ExpensifyController {
           const email = email_addresses?.[0]?.email_address;
           const phone = phone_numbers?.[0]?.phone_number;
           const name = first_name;
-          await this.authService.signup({ phone, name, email, id });
+          await this.expensifyService.signup({ phone, name, email, id });
           return res.status(201).json({ message: 'User created successfully' });
         case 'user.updated':
-          await this.authService.editProfile(id, { phone, name, email });
+          await this.expensifyService.editProfile(id, { phone, name, email });
           return res.status(200).json({ message: 'User updated successfully' });
         case 'user.deleted':
-          await this.authService.editProfile(id, { delete: true });
+          await this.expensifyService.editProfile(id, { delete: true });
           return res.status(200).json({ message: 'User deleted successfully' });
         default:
           break;
@@ -80,7 +100,10 @@ export class ExpensifyController {
         query,
       } = req;
       const { startDate, endDate } = query as { startDate: string; endDate: string };
-      const data = await this.authService.getAllTransactions(exp_us_id, { startDate, endDate });
+      const data = await this.expensifyService.getAllTransactions(exp_us_id, {
+        startDate,
+        endDate,
+      });
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -92,7 +115,7 @@ export class ExpensifyController {
     try {
       const { params } = req;
       const { id } = params as unknown as { id: number };
-      const [data] = await this.authService.getTransaction(id);
+      const [data] = await this.expensifyService.getTransaction(id);
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -114,7 +137,7 @@ export class ExpensifyController {
       }
 
       const insertBody = body as unknown as InsertExpensifyTransactions;
-      const [data] = await this.authService.editTransaction(id, insertBody);
+      const [data] = await this.expensifyService.editTransaction(id, insertBody);
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -138,7 +161,7 @@ export class ExpensifyController {
       }
 
       const insertBody = body as unknown as InsertExpensifyTransactions;
-      const data = await this.authService.createTransaction(insertBody);
+      const data = await this.expensifyService.createTransaction(insertBody);
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -151,11 +174,70 @@ export class ExpensifyController {
       const {
         user: { exp_us_id },
       } = req;
-      const data = await this.authService.getAllCategories(exp_us_id);
+      const data = await this.expensifyService.getAllCategories(exp_us_id);
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
       return res.status(403).json({ error: error.message });
     }
+  }
+
+  @Post('accounts')
+  create(@Body() dto: CreateBankAccountDto, @Req() req: ExpressWithUser) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    dto.exp_ba_user_id = exp_us_id;
+    return this.expensifyService.createAccount(dto);
+  }
+
+  @Get('accounts')
+  findAll(@Req() req: ExpressWithUser) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    return this.expensifyService.findAllAccount(exp_us_id);
+  }
+
+  @Get('accounts/:id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.expensifyService.findAccount(id);
+  }
+
+  @Put('accounts/:id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBankAccountDto) {
+    const insertDto = dto as unknown as InsertExpensifyBankAccounts;
+    return this.expensifyService.updateAccount(id, insertDto);
+  }
+
+  @Delete('accounts/:id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.expensifyService.removeAccount(id);
+  }
+
+  @Post('starred')
+  async starTransaction(@Body() dto: CreateStarredTransactionDto) {
+    return this.expensifyService.starTransaction(dto);
+  }
+
+  @Delete('starred/:transactionId')
+  async unstarTransaction(
+    @Param('transactionId', ParseIntPipe) transactionId: number,
+    @Query('userId', ParseIntPipe) userId: number, // or use Auth
+  ) {
+    return this.expensifyService.unstarTransaction(userId, transactionId);
+  }
+
+  @Get('starred')
+  async getAllStarred(@Query('userId', ParseIntPipe) userId: number) {
+    return this.expensifyService.getUserStarredTransactions(userId);
+  }
+
+  @Get('starred/:transactionId')
+  async isTransactionStarred(
+    @Param('transactionId', ParseIntPipe) transactionId: number,
+    @Query('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.expensifyService.isTransactionStarred(userId, transactionId);
   }
 }

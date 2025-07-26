@@ -259,3 +259,45 @@ export const expTransactions = pgTable('exp_transactions', {
 
 export type InsertExpensifyTransactions = InferInsertModel<typeof expTransactions>;
 export type SelectExpensifyTransactions = InferSelectModel<typeof expTransactions>;
+
+export const expBankAccounts = pgTable('exp_bank_accounts', {
+  exp_ba_id: serial('exp_ba_id').primaryKey(),
+
+  exp_ba_user_id: integer('exp_ba_user_id')
+    .notNull()
+    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+
+  exp_ba_name: text('exp_ba_name').notNull(),
+
+  exp_ba_balance: varchar('exp_ba_balance'),
+
+  exp_ba_is_active: integer('exp_ba_is_active').default(1),
+
+  exp_ba_created_at: timestamp('exp_ba_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+
+  exp_ba_updated_at: timestamp('exp_ba_updated_at', { mode: 'string' }).$onUpdate(() => sql`now()`),
+});
+
+export type InsertExpensifyBankAccounts = InferInsertModel<typeof expBankAccounts>;
+export type SelectExpensifyBankAccounts = InferSelectModel<typeof expBankAccounts>;
+
+export const expStarredTransactions = pgTable('exp_starred_transactions', {
+  exp_st_id: serial('exp_st_id').primaryKey(),
+
+  exp_st_user_id: integer('exp_st_user_id')
+    .notNull()
+    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+
+  exp_st_transaction_id: integer('exp_st_transaction_id')
+    .notNull()
+    .references(() => expTransactions.exp_ts_id, { onDelete: 'cascade' }),
+
+  exp_st_created_at: timestamp('exp_st_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+});
+
+export type InsertExpensifyStarredTransactions = InferInsertModel<typeof expStarredTransactions>;
+export type SelectExpensifyStarredTransactions = InferSelectModel<typeof expStarredTransactions>;

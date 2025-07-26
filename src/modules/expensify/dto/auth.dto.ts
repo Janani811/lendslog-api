@@ -46,3 +46,21 @@ export class TransactionDto {
 
   exp_ts_user_id: number;
 }
+
+export class CreateBankAccountDto {
+  exp_ba_name: string;
+  exp_ba_type: string;
+  exp_ba_balance: number;
+  exp_ba_user_id: number;
+}
+
+export class UpdateBankAccountDto {
+  exp_ba_name?: string;
+  exp_ba_type?: string;
+  exp_ba_balance?: number;
+}
+
+export class CreateStarredTransactionDto {
+  exp_st_user_id: number;
+  exp_st_transaction_id: number;
+}

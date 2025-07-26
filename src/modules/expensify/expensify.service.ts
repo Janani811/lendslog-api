@@ -1,23 +1,22 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 
-import { ExpensifySignUpDto } from './dto/auth.dto';
+import { CreateBankAccountDto, CreateStarredTransactionDto, ExpensifySignUpDto } from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 import { ExpensifyTransactionsRepository } from 'src/database/repositories/ExpensifyTransactions.repository';
 import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositories/ExpensifyTransactionsCategory.repository';
-import { InsertExpensifyTransactions } from 'src/database/schemas/schema';
+import { InsertExpensifyBankAccounts, InsertExpensifyTransactions } from 'src/database/schemas/schema';
+import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
+import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
 
 @Injectable()
 export class ExpensifyService {
   constructor(
-    private jwtService: JwtService,
-    private config: ConfigService,
     private usersRepository: ExpensifyUserRepository,
     private expensifyTransactionsRepository: ExpensifyTransactionsRepository,
     private expensifyTransactionsCategoryRepository: ExpensifyTransactionsCategoryRepository,
-    // private twilioService: TwilioService,
+    private expensifyBankAccountRepository: ExpensifyBankAccountRepository,
+    private expStarredTransactionsRepository: ExpStarredTransactionsRepository
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -82,5 +81,34 @@ export class ExpensifyService {
   }
   async getAllCategories(id: number){
     return await this.expensifyTransactionsCategoryRepository.getAllCategories(id)
+  }
+
+  async createAccount(dto: CreateBankAccountDto) {
+    return await this.expensifyBankAccountRepository.createBankAccount(dto)
+  }
+  async findAllAccount(id:number) {
+     return await this.expensifyBankAccountRepository.getAllBankAccount(id)
+  }
+  async findAccount(id: number) {
+    return await this.expensifyBankAccountRepository.getOne(id)
+  }
+  async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
+     return await this.expensifyBankAccountRepository.updateBankAccount(dto, id)
+  }
+  async removeAccount(id: number) {
+    return await this.expensifyBankAccountRepository.deleteBankAccount( id)
+  }
+
+  async starTransaction(dto: CreateStarredTransactionDto) {
+     return await this.expStarredTransactionsRepository.starTransaction(dto)
+  }
+  async unstarTransaction(userId: number, transactionId: number) {
+     return await this.expStarredTransactionsRepository.unstarTransaction(userId, transactionId)
+  }
+  async getUserStarredTransactions(userId: number) {
+    return await this.expStarredTransactionsRepository.getUserStarredTransactions(userId)
+  }
+  async isTransactionStarred(userId: number, transactionId: number) {
+    return await this.expStarredTransactionsRepository.isTransactionStarred(userId, transactionId)
   }
 }
