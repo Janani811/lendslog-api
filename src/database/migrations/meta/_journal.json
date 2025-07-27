@@ -64,6 +64,13 @@
       "when": 1753365541489,
       "tag": "0008_young_sharon_ventura",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1753638991989,
+      "tag": "0009_lucky_star_brand",
+      "breakpoints": true
     }
   ]
 }

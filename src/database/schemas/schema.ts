@@ -271,7 +271,17 @@ export const expBankAccounts = pgTable('exp_bank_accounts', {
 
   exp_ba_balance: varchar('exp_ba_balance'),
 
+  exp_ba_currency: varchar('exp_ba_currency', { length: 10 }).default('INR'),
+  exp_ba_type: varchar('exp_ba_type', { length: 20 }).default('bank'),
+
+  exp_ba_icon: varchar('exp_ba_icon', { length: 50 }),
+  exp_ba_color: varchar('exp_ba_color', { length: 10 }),
+
+  exp_ba_is_primary: boolean('exp_ba_is_primary').default(false),
+
   exp_ba_is_active: integer('exp_ba_is_active').default(1),
+
+  exp_ba_is_deleted: boolean('exp_ba_is_deleted').default(false),
 
   exp_ba_created_at: timestamp('exp_ba_created_at', { mode: 'string' })
     .notNull()
