@@ -1,11 +1,20 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
-import { CreateBankAccountDto, CreateStarredTransactionDto, ExpensifySignUpDto } from './dto/auth.dto';
+import {
+  CreateBankAccountDto,
+  CreateStarredTransactionDto,
+  ExpensifySignUpDto,
+} from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 import { ExpensifyTransactionsRepository } from 'src/database/repositories/ExpensifyTransactions.repository';
 import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositories/ExpensifyTransactionsCategory.repository';
-import { InsertExpensifyBankAccounts, InsertExpensifyTransactions } from 'src/database/schemas/schema';
+import {
+  InsertExpensifyBankAccounts,
+  InsertExpensifyTransactionCategories,
+  InsertExpensifyTransactions,
+  SelectExpensifyTransactionCategories,
+} from 'src/database/schemas/schema';
 import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
 import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
 
@@ -16,7 +25,7 @@ export class ExpensifyService {
     private expensifyTransactionsRepository: ExpensifyTransactionsRepository,
     private expensifyTransactionsCategoryRepository: ExpensifyTransactionsCategoryRepository,
     private expensifyBankAccountRepository: ExpensifyBankAccountRepository,
-    private expStarredTransactionsRepository: ExpStarredTransactionsRepository
+    private expStarredTransactionsRepository: ExpStarredTransactionsRepository,
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -50,7 +59,7 @@ export class ExpensifyService {
       if (dto.delete) {
         data = {
           exp_us_is_deleted: true,
-        }
+        };
       } else {
         data = {
           exp_us_name: dto.name,
@@ -67,48 +76,60 @@ export class ExpensifyService {
     }
   }
 
-  async getAllTransactions(id: number, args: { startDate?: string, endDate?: string }){
-    return await this.expensifyTransactionsRepository.getAllTransactions(id, args)
+  async getAllTransactions(id: number, args: { startDate?: string; endDate?: string }) {
+    return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
   }
-  async getTransaction(id){
-    return await this.expensifyTransactionsRepository.getOne(id)
+  async getTransaction(id) {
+    return await this.expensifyTransactionsRepository.getOne(id);
   }
-  async editTransaction(id: number, dto:InsertExpensifyTransactions){
-    return await this.expensifyTransactionsRepository.updateTransaction(id, dto)
+  async editTransaction(id: number, dto: InsertExpensifyTransactions) {
+    return await this.expensifyTransactionsRepository.updateTransaction(id, dto);
   }
-   async createTransaction(dto:InsertExpensifyTransactions){
-    return await this.expensifyTransactionsRepository.createTransaction(dto)
+  async createTransaction(dto: InsertExpensifyTransactions) {
+    return await this.expensifyTransactionsRepository.createTransaction(dto);
   }
-  async getAllCategories(id: number){
-    return await this.expensifyTransactionsCategoryRepository.getAllCategories(id)
+  async getAllCategories(id: number) {
+    return await this.expensifyTransactionsCategoryRepository.getAllCategories(id);
   }
 
   async createAccount(dto: CreateBankAccountDto) {
-    return await this.expensifyBankAccountRepository.createBankAccount(dto)
+    return await this.expensifyBankAccountRepository.createBankAccount(dto);
   }
-  async findAllAccount(id:number) {
-     return await this.expensifyBankAccountRepository.getAllBankAccount(id)
+  async findAllAccount(id: number) {
+    return await this.expensifyBankAccountRepository.getAllBankAccount(id);
   }
   async findAccount(id: number) {
-    return await this.expensifyBankAccountRepository.getOne(id)
+    return await this.expensifyBankAccountRepository.getOne(id);
   }
   async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
-     return await this.expensifyBankAccountRepository.updateBankAccount(dto, id)
+    return await this.expensifyBankAccountRepository.updateBankAccount(dto, id);
   }
   async removeAccount(id: number) {
-    return await this.expensifyBankAccountRepository.deleteBankAccount( id)
+    return await this.expensifyBankAccountRepository.deleteBankAccount(id);
   }
 
   async starTransaction(dto: CreateStarredTransactionDto) {
-     return await this.expStarredTransactionsRepository.starTransaction(dto)
+    return await this.expStarredTransactionsRepository.starTransaction(dto);
   }
   async unstarTransaction(userId: number, transactionId: number) {
-     return await this.expStarredTransactionsRepository.unstarTransaction(userId, transactionId)
+    return await this.expStarredTransactionsRepository.unstarTransaction(userId, transactionId);
   }
   async getUserStarredTransactions(userId: number) {
-    return await this.expStarredTransactionsRepository.getUserStarredTransactions(userId)
+    return await this.expStarredTransactionsRepository.getUserStarredTransactions(userId);
   }
   async isTransactionStarred(userId: number, transactionId: number) {
-    return await this.expStarredTransactionsRepository.isTransactionStarred(userId, transactionId)
+    return await this.expStarredTransactionsRepository.isTransactionStarred(userId, transactionId);
+  }
+  async reorderCategories(categories: Partial<SelectExpensifyTransactionCategories>[]) {
+    return await this.expensifyTransactionsCategoryRepository.reorderCategories(categories);
+  }
+  async createCategory(dto: InsertExpensifyTransactionCategories, userId: number) {
+    return await this.expensifyTransactionsCategoryRepository.createCategory(dto, userId);
+  }
+  async updateCategory(dto: InsertExpensifyTransactionCategories,userId: number, id: number) {
+    return await this.expensifyTransactionsCategoryRepository.updateCategory(dto,userId, { id: id });
+  }
+  async deleteCategory(id: number, userId: number) {
+    return await this.expensifyTransactionsCategoryRepository.deleteCategory(id, userId);
   }
 }

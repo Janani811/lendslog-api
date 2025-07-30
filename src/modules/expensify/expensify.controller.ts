@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -20,7 +21,9 @@ import * as Express from 'express';
 import { ExpressWithUser } from './type';
 import {
   InsertExpensifyBankAccounts,
+  InsertExpensifyTransactionCategories,
   InsertExpensifyTransactions,
+  SelectExpensifyTransactionCategories,
 } from 'src/database/schemas/schema';
 import {
   CreateBankAccountDto,
@@ -180,6 +183,48 @@ export class ExpensifyController {
       console.log(error);
       return res.status(403).json({ error: error.message });
     }
+  }
+
+  @Post('categories')
+  async createCategory(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() dto: InsertExpensifyTransactionCategories,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      await this.expensifyService.createCategory(dto, exp_us_id);
+      return res.status(200).json({ message: 'Category created successfully' });
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  @Put('categories/:id')
+  async updateCategory(
+    @Req() req: ExpressWithUser,
+    @Param('id') id: string,
+    @Body() dto: InsertExpensifyTransactionCategories,
+  ) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    return this.expensifyService.updateCategory(dto, exp_us_id, Number(id));
+  }
+
+  @Patch('categories/reorder')
+  async reorderCategories(@Body() dto: Partial<SelectExpensifyTransactionCategories>[]) {
+    return this.expensifyService.reorderCategories(dto);
+  }
+  @Delete('categories/:id')
+  async delete(@Req() req: ExpressWithUser, @Param('id', ParseIntPipe) id: number) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    return this.expensifyService.deleteCategory(id, exp_us_id);
   }
 
   @Post('accounts')

@@ -230,6 +230,16 @@ export const expTransactionCategories = pgTable('exp_transaction_categories', {
   exp_tc_label: text('exp_tc_label').notNull(),
   exp_tc_icon: text('exp_tc_icon'),
   exp_tc_user_id: integer('exp_tc_user_id'),
+  exp_tc_icon_bg_color: varchar('exp_tc_icon_bg_color', { length: 10 }),
+  exp_tc_transaction_type: integer('exp_tc_transaction_type')
+    .notNull()
+    .references(() => expTransactionTypes.exp_tt_id, { onDelete: 'cascade' }),
+  exp_tc_created_at: timestamp('exp_tc_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+
+  exp_tc_updated_at: timestamp('exp_tc_updated_at', { mode: 'string' }).$onUpdate(() => sql`now()`),
+  exp_tc_sort_order: integer('exp_tc_sort_order').notNull().default(1),
 });
 
 export type InsertExpensifyTransactionCategories = InferInsertModel<
@@ -255,6 +265,11 @@ export const expTransactions = pgTable('exp_transactions', {
   exp_ts_category: integer('exp_ts_category')
     .notNull()
     .references(() => expTransactionCategories.exp_tc_id),
+  exp_ts_created_at: timestamp('exp_ts_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+
+  exp_ts_updated_at: timestamp('exp_ts_updated_at', { mode: 'string' }).$onUpdate(() => sql`now()`),
 });
 
 export type InsertExpensifyTransactions = InferInsertModel<typeof expTransactions>;
