@@ -5,6 +5,7 @@ import {
   CreateBankAccountDto,
   CreateStarredTransactionDto,
   ExpensifySignUpDto,
+  TransactionDto,
 } from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 import { ExpensifyTransactionsRepository } from 'src/database/repositories/ExpensifyTransactions.repository';
@@ -12,7 +13,6 @@ import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositori
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
-  InsertExpensifyTransactions,
   SelectExpensifyTransactionCategories,
 } from 'src/database/schemas/schema';
 import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
@@ -82,10 +82,13 @@ export class ExpensifyService {
   async getTransaction(id) {
     return await this.expensifyTransactionsRepository.getOne(id);
   }
-  async editTransaction(id: number, dto: InsertExpensifyTransactions) {
+  async deleteTransaction(id: number) {
+    return await this.expensifyTransactionsRepository.deleteTransaction(id);
+  }
+  async editTransaction(id: number, dto: TransactionDto) {
     return await this.expensifyTransactionsRepository.updateTransaction(id, dto);
   }
-  async createTransaction(dto: InsertExpensifyTransactions) {
+  async createTransaction(dto: TransactionDto) {
     return await this.expensifyTransactionsRepository.createTransaction(dto);
   }
   async getAllCategories(id: number) {

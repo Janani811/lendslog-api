@@ -1,8 +1,13 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq, and, getTableColumns } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
-import { expTransactions, expStarredTransactions } from '../schemas/schema';
+import {
+  expTransactions,
+  expStarredTransactions,
+  expTransactionCategories,
+  expTransactionTypes,
+} from '../schemas/schema';
 import { CreateStarredTransactionDto } from 'src/modules/expensify/dto/auth.dto';
 
 @Injectable()
@@ -49,13 +54,30 @@ export class ExpStarredTransactionsRepository {
   async getUserStarredTransactions(userId: number) {
     return await this.dbObject.db
       .select({
-        ...getTableColumns(expTransactions),
-        starred: expStarredTransactions.exp_st_created_at,
+        exp_ts_id: expTransactions.exp_ts_id,
+        exp_ts_title: expTransactions.exp_ts_title,
+        exp_ts_date: expTransactions.exp_ts_date,
+        exp_ts_note: expTransactions.exp_ts_note,
+        exp_ts_time: expTransactions.exp_ts_time,
+        exp_ts_amount: expTransactions.exp_ts_amount,
+        exp_ts_category: expTransactionCategories.exp_tc_label,
+        exp_ts_transaction_type: expTransactionTypes.exp_tt_label,
+        exp_tc_id: expTransactionCategories.exp_tc_id,
+        exp_tt_id: expTransactionTypes.exp_tt_id,
+        exp_st_id: expStarredTransactions.exp_st_id,
       })
       .from(expStarredTransactions)
       .innerJoin(
         expTransactions,
         eq(expStarredTransactions.exp_st_transaction_id, expTransactions.exp_ts_id),
+      )
+      .innerJoin(
+        expTransactionCategories,
+        eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
+      )
+      .innerJoin(
+        expTransactionTypes,
+        eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
       )
       .where(eq(expStarredTransactions.exp_st_user_id, userId));
   }

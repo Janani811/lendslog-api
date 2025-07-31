@@ -22,7 +22,6 @@ import { ExpressWithUser } from './type';
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
-  InsertExpensifyTransactions,
   SelectExpensifyTransactionCategories,
 } from 'src/database/schemas/schema';
 import {
@@ -113,6 +112,30 @@ export class ExpensifyController {
       return res.status(403).json({ error: error.message });
     }
   }
+  @Post('transactions')
+  async createTransaction(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() body: TransactionDto,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      body.exp_ts_user_id = exp_us_id;
+
+      if (body.exp_tc_id === undefined || body.exp_tt_id === undefined) {
+        return res.status(400).json({ error: 'Missing required fields: exp_tc_id or exp_tt_id' });
+      }
+
+      const insertBody = body;
+      const data = await this.expensifyService.createTransaction(insertBody);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json({ error: error.message });
+    }
+  }
   @Get('transaction/:id')
   async getTransaction(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
     try {
@@ -132,45 +155,31 @@ export class ExpensifyController {
     @Body() body: TransactionDto,
   ) {
     try {
-      const { params } = req;
+      const {
+        params,
+        user: { exp_us_id },
+      } = req;
       const { id } = params as unknown as { id: number };
 
       if (body.exp_tc_id === undefined || body.exp_tt_id === undefined) {
         return res.status(400).json({ error: 'Missing required fields: exp_tc_id or exp_tt_id' });
       }
 
-      const insertBody = body as unknown as InsertExpensifyTransactions;
-      const [data] = await this.expensifyService.editTransaction(id, insertBody);
-      return res.status(200).json(data);
-    } catch (error) {
-      console.log(error);
-      return res.status(403).json({ error: error.message });
-    }
-  }
-  @Post('transactions')
-  async createTransaction(
-    @Req() req: ExpressWithUser,
-    @Res() res: Express.Response,
-    @Body() body: TransactionDto,
-  ) {
-    try {
-      const {
-        user: { exp_us_id },
-      } = req;
       body.exp_ts_user_id = exp_us_id;
 
-      if (body.exp_tc_id === undefined || body.exp_tt_id === undefined) {
-        return res.status(400).json({ error: 'Missing required fields: exp_tc_id or exp_tt_id' });
-      }
-
-      const insertBody = body as unknown as InsertExpensifyTransactions;
-      const data = await this.expensifyService.createTransaction(insertBody);
-      return res.status(200).json(data);
+      const insertBody = body;
+      await this.expensifyService.editTransaction(id, insertBody);
+      return res.status(200).json({ message: 'Updated successfully' });
     } catch (error) {
       console.log(error);
       return res.status(403).json({ error: error.message });
     }
   }
+  @Delete('transaction/:id')
+  deleteTransaction(@Param('id', ParseIntPipe) id: number) {
+    return this.expensifyService.deleteTransaction(id);
+  }
+
   @Get('categories')
   async getCategories(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
     try {
@@ -274,8 +283,11 @@ export class ExpensifyController {
   }
 
   @Get('starred')
-  async getAllStarred(@Query('userId', ParseIntPipe) userId: number) {
-    return this.expensifyService.getUserStarredTransactions(userId);
+  async getAllStarred(@Req() req: ExpressWithUser) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    return this.expensifyService.getUserStarredTransactions(exp_us_id);
   }
 
   @Get('starred/:transactionId')
