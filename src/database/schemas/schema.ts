@@ -269,6 +269,10 @@ export const expTransactions = pgTable('exp_transactions', {
     .notNull()
     .default(sql`now()`),
 
+  exp_ts_bank_account_id: integer('exp_ts_bank_account_id')
+    .references(() => expBankAccounts.exp_ba_id, { onDelete: 'set null' })
+    .default(null),
+
   exp_ts_updated_at: timestamp('exp_ts_updated_at', { mode: 'string' }).$onUpdate(() => sql`now()`),
 });
 

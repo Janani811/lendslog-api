@@ -50,15 +50,15 @@ export class TransactionDto {
 
 export class CreateBankAccountDto {
   exp_ba_name: string;
-  exp_ba_type: string;
-  exp_ba_balance: number;
+  exp_ba_balance: string;
   exp_ba_user_id: number;
+  exp_ba_icon: string;
 }
 
 export class UpdateBankAccountDto {
   exp_ba_name?: string;
-  exp_ba_type?: string;
   exp_ba_balance?: number;
+  exp_ba_icon?: string;
 }
 
 export class CreateStarredTransactionDto {

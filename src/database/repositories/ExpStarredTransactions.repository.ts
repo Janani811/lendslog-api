@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { eq, and } from 'drizzle-orm';
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -35,7 +35,20 @@ export class ExpStarredTransactionsRepository {
   }
 
   async unstarTransaction(userId: number, transactionId: number) {
-    const deleted = await this.dbObject.db
+    const [exists] = await this.dbObject.db
+      .select()
+      .from(expStarredTransactions)
+      .where(
+        and(
+          eq(expStarredTransactions.exp_st_user_id, userId),
+          eq(expStarredTransactions.exp_st_transaction_id, transactionId),
+        ),
+      )
+      .limit(1);
+    if (!exists) {
+      return;
+    }
+    await this.dbObject.db
       .delete(expStarredTransactions)
       .where(
         and(
@@ -43,10 +56,6 @@ export class ExpStarredTransactionsRepository {
           eq(expStarredTransactions.exp_st_transaction_id, transactionId),
         ),
       );
-
-    if (deleted.rowCount === 0) {
-      throw new NotFoundException('Starred transaction not found');
-    }
 
     return { message: 'Transaction unstarred' };
   }

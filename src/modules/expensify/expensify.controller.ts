@@ -254,8 +254,11 @@ export class ExpensifyController {
   }
 
   @Get('accounts/:id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.expensifyService.findAccount(id);
+  findOne(@Req() req: ExpressWithUser, @Param('id', ParseIntPipe) id: number) {
+    const {
+      user: { exp_us_id },
+    } = req;
+    return this.expensifyService.findAccount(id, exp_us_id);
   }
 
   @Put('accounts/:id')

@@ -22,7 +22,7 @@ export class ExpensifyTransactionsRepository {
   ) {}
 
   async getOne(id: number) {
-    return await await this.dbObject.db
+    return await this.dbObject.db
       .select({
         exp_ts_id: expTransactions.exp_ts_id,
         exp_ts_title: expTransactions.exp_ts_title,
@@ -37,13 +37,15 @@ export class ExpensifyTransactionsRepository {
         exp_tc_id: expTransactionCategories.exp_tc_id,
         exp_tt_id: expTransactionTypes.exp_tt_id,
         exp_st_id: expStarredTransactions.exp_st_id,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
       })
       .from(expTransactions)
-      .leftJoin(
+      .innerJoin(
         expTransactionTypes,
         eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
       )
-      .leftJoin(
+      .innerJoin(
         expTransactionCategories,
         eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
       )
@@ -60,7 +62,6 @@ export class ExpensifyTransactionsRepository {
     delete data.exp_st_id;
     const transaction = data as unknown as InsertExpensifyTransactions;
     const [row] = await this.dbObject.db.insert(expTransactions).values(transaction).returning();
-    console.log(row);
     if (isStarred) {
       await this.expStarredTransactionsRepository.starTransaction({
         exp_st_user_id: transaction.exp_ts_user_id,
@@ -87,15 +88,21 @@ export class ExpensifyTransactionsRepository {
     }
   }
 
-  async getAllTransactions(id: number, args: { startDate?: string; endDate?: string }) {
-    const conditions = [eq(expTransactions.exp_ts_user_id, id)];
+  async getAllTransactions(
+    userId: number,
+    args: { startDate?: string; endDate?: string; accountId?: number },
+  ) {
+    const conditions = [eq(expTransactions.exp_ts_user_id, userId)];
     if (args.startDate && args.endDate) {
       conditions.push(
         gte(expTransactions.exp_ts_date, args.startDate),
         lt(expTransactions.exp_ts_date, args.endDate),
       );
     }
-    return await await this.dbObject.db
+    if (args.accountId) {
+      conditions.push(eq(expTransactions.exp_ts_bank_account_id, args.accountId));
+    }
+    return await this.dbObject.db
       .select({
         exp_ts_id: expTransactions.exp_ts_id,
         exp_ts_title: expTransactions.exp_ts_title,
@@ -106,14 +113,16 @@ export class ExpensifyTransactionsRepository {
         exp_ts_category: expTransactionCategories.exp_tc_label,
         exp_ts_transaction_type: expTransactionTypes.exp_tt_label,
         exp_tc_id: expTransactionCategories.exp_tc_id,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
         exp_tt_id: expTransactionTypes.exp_tt_id,
       })
       .from(expTransactions)
-      .leftJoin(
+      .innerJoin(
         expTransactionTypes,
         eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
       )
-      .leftJoin(
+      .innerJoin(
         expTransactionCategories,
         eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
       )

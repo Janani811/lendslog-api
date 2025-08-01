@@ -98,11 +98,11 @@ export class ExpensifyService {
   async createAccount(dto: CreateBankAccountDto) {
     return await this.expensifyBankAccountRepository.createBankAccount(dto);
   }
-  async findAllAccount(id: number) {
-    return await this.expensifyBankAccountRepository.getAllBankAccount(id);
+  async findAllAccount(userId: number) {
+    return await this.expensifyBankAccountRepository.getAllBankAccount(userId);
   }
-  async findAccount(id: number) {
-    return await this.expensifyBankAccountRepository.getOne(id);
+  async findAccount(accountId: number, userId: number) {
+    return await this.expensifyBankAccountRepository.getAccountDetailsWithGroupedTransactionsById(accountId, userId);
   }
   async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
     return await this.expensifyBankAccountRepository.updateBankAccount(dto, id);
