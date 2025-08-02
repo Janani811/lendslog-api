@@ -129,8 +129,8 @@ export class ExpensifyController {
       }
 
       const insertBody = body;
-      const data = await this.expensifyService.createTransaction(insertBody);
-      return res.status(200).json(data);
+      await this.expensifyService.createTransaction(insertBody);
+      return res.status(200).json({ message: 'Successfully added' });
     } catch (error) {
       console.log(error);
       return res.status(403).json({ error: error.message });
