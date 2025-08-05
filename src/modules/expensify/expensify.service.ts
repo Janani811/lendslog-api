@@ -76,7 +76,10 @@ export class ExpensifyService {
     }
   }
 
-  async getAllTransactions(id: number, args: { startDate?: string; endDate?: string }) {
+  async getAllTransactions(
+    id: number,
+    args: { startDate?: string; endDate?: string; transaction_type?: number },
+  ) {
     return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
   }
   async getTransaction(id) {
@@ -89,6 +92,12 @@ export class ExpensifyService {
     return await this.expensifyTransactionsRepository.updateTransaction(id, dto);
   }
   async createTransaction(dto: TransactionDto) {
+    const [account] = await this.expensifyBankAccountRepository.getAllBankAccount(
+      dto.exp_ts_user_id,
+    );
+    if (account) {
+      dto.exp_ts_bank_account_id = account.exp_ba_id;
+    }
     return await this.expensifyTransactionsRepository.createTransaction(dto);
   }
   async getAllCategories(id: number) {
@@ -102,7 +111,10 @@ export class ExpensifyService {
     return await this.expensifyBankAccountRepository.getAllBankAccount(userId);
   }
   async findAccount(accountId: number, userId: number) {
-    return await this.expensifyBankAccountRepository.getAccountDetailsWithGroupedTransactionsById(accountId, userId);
+    return await this.expensifyBankAccountRepository.getAccountDetailsWithGroupedTransactionsById(
+      accountId,
+      userId,
+    );
   }
   async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
     return await this.expensifyBankAccountRepository.updateBankAccount(dto, id);
@@ -129,8 +141,10 @@ export class ExpensifyService {
   async createCategory(dto: InsertExpensifyTransactionCategories, userId: number) {
     return await this.expensifyTransactionsCategoryRepository.createCategory(dto, userId);
   }
-  async updateCategory(dto: InsertExpensifyTransactionCategories,userId: number, id: number) {
-    return await this.expensifyTransactionsCategoryRepository.updateCategory(dto,userId, { id: id });
+  async updateCategory(dto: InsertExpensifyTransactionCategories, userId: number, id: number) {
+    return await this.expensifyTransactionsCategoryRepository.updateCategory(dto, userId, {
+      id: id,
+    });
   }
   async deleteCategory(id: number, userId: number) {
     return await this.expensifyTransactionsCategoryRepository.deleteCategory(id, userId);

@@ -46,6 +46,7 @@ export class TransactionDto {
 
   exp_ts_user_id: number;
   exp_st_id: boolean;
+  exp_ts_bank_account_id: number;
 }
 
 export class CreateBankAccountDto {

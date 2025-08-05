@@ -5,6 +5,7 @@ import { DB } from '../database.constants';
 import { Database } from '../types/Database';
 
 import {
+  expBankAccounts,
   expStarredTransactions,
   expTransactionCategories,
   expTransactions,
@@ -90,7 +91,7 @@ export class ExpensifyTransactionsRepository {
 
   async getAllTransactions(
     userId: number,
-    args: { startDate?: string; endDate?: string; accountId?: number },
+    args: { startDate?: string; endDate?: string; accountId?: number; transaction_type?: number },
   ) {
     const conditions = [eq(expTransactions.exp_ts_user_id, userId)];
     if (args.startDate && args.endDate) {
@@ -101,6 +102,9 @@ export class ExpensifyTransactionsRepository {
     }
     if (args.accountId) {
       conditions.push(eq(expTransactions.exp_ts_bank_account_id, args.accountId));
+    }
+    if (args.transaction_type) {
+      conditions.push(eq(expTransactions.exp_ts_transaction_type, args.transaction_type));
     }
     return await this.dbObject.db
       .select({
@@ -116,11 +120,17 @@ export class ExpensifyTransactionsRepository {
         exp_tc_icon: expTransactionCategories.exp_tc_icon,
         exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
         exp_tt_id: expTransactionTypes.exp_tt_id,
+        exp_ba_id: expBankAccounts.exp_ba_id,
+        exp_ba_name: expBankAccounts.exp_ba_name,
       })
       .from(expTransactions)
       .innerJoin(
         expTransactionTypes,
         eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
+      )
+      .innerJoin(
+        expBankAccounts,
+        eq(expTransactions.exp_ts_bank_account_id, expBankAccounts.exp_ba_id),
       )
       .innerJoin(
         expTransactionCategories,

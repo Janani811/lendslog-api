@@ -7,6 +7,7 @@ import {
   expStarredTransactions,
   expTransactionCategories,
   expTransactionTypes,
+  expBankAccounts,
 } from '../schemas/schema';
 import { CreateStarredTransactionDto } from 'src/modules/expensify/dto/auth.dto';
 
@@ -74,6 +75,10 @@ export class ExpStarredTransactionsRepository {
         exp_tc_id: expTransactionCategories.exp_tc_id,
         exp_tt_id: expTransactionTypes.exp_tt_id,
         exp_st_id: expStarredTransactions.exp_st_id,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
+        exp_ba_id: expBankAccounts.exp_ba_id,
+        exp_ba_name: expBankAccounts.exp_ba_name,
       })
       .from(expStarredTransactions)
       .innerJoin(
@@ -83,6 +88,10 @@ export class ExpStarredTransactionsRepository {
       .innerJoin(
         expTransactionCategories,
         eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
+      )
+      .innerJoin(
+        expBankAccounts,
+        eq(expTransactions.exp_ts_bank_account_id, expBankAccounts.exp_ba_id),
       )
       .innerJoin(
         expTransactionTypes,

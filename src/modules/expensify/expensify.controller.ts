@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseIntPipe,
   Patch,
@@ -30,6 +31,9 @@ import {
   TransactionDto,
   UpdateBankAccountDto,
 } from './dto/auth.dto';
+import * as ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
+import moment from 'moment';
 
 @Controller('expensify')
 export class ExpensifyController {
@@ -299,5 +303,194 @@ export class ExpensifyController {
     @Query('userId', ParseIntPipe) userId: number,
   ) {
     return this.expensifyService.isTransactionStarred(userId, transactionId);
+  }
+  @Get('export-excel')
+  async exportTransactions(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    const {
+      user: { exp_us_id },
+      query,
+    } = req;
+    const {
+      startDate,
+      endDate,
+      format = 'xlsx',
+      transaction_type = 'all',
+    } = query as {
+      startDate: string;
+      endDate: string;
+      format?: 'xlsx' | 'csv';
+      transaction_type?: 'all' | 'income' | 'expense';
+    };
+
+    const transactions = await this.expensifyService.getAllTransactions(exp_us_id, {
+      startDate,
+      endDate,
+      transaction_type:
+        transaction_type === 'income' ? 2 : transaction_type === 'expense' ? 1 : undefined,
+    });
+
+    if (!transactions || transactions.length === 0) {
+      return res
+        .status(204)
+        .json({ message: 'No transactions found for the selected date range.' });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(
+      `Transactions Report (${moment(startDate).format('DD-MM-YYYY')} - ${moment(endDate).format('DD-MM-YYYY')})`,
+    );
+
+    worksheet.columns = [
+      { header: 'No', key: 'id', width: 5 },
+      { header: 'Account Name', key: 'account_name', width: 15 },
+      { header: 'Date', key: 'date', width: 20 },
+      { header: 'Category', key: 'category', width: 15 },
+      { header: 'Transactions Type', key: 'transactions_type', width: 10 },
+      { header: 'Usage', key: 'title', width: 20 },
+      { header: 'Amount', key: 'amount', width: 15 },
+    ];
+
+    transactions.forEach((t, index) => {
+      worksheet.addRow({
+        id: index + 1,
+        title: t.exp_ts_title,
+        amount: t.exp_ts_amount,
+        category: t.exp_ts_category || '',
+        transactions_type: t.exp_ts_transaction_type || '',
+        date: t.exp_ts_date
+          ? `${moment(`${t.exp_ts_date} ${t.exp_ts_time}`, 'YYYY-MM-DD hh:mm a').format(
+              'DD/MM/YYYY hh:mm A',
+            )}`
+          : '',
+        account_name: t.exp_ba_name,
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+
+    const fileName = `transactions-${moment().format('DD-MM-YYYY_HH-mm-ss')}.${format === 'csv' ? 'csv' : 'xlsx'}`;
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    if (format === 'csv') {
+      res.setHeader('Content-Type', 'text/csv');
+      const buffer = await workbook.csv.writeBuffer();
+      res.end(buffer);
+    } else {
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      const buffer = await workbook.xlsx.writeBuffer();
+      res.end(buffer);
+    }
+  }
+
+  @Get('export-pdf')
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename=transactions.pdf')
+  async exportTransactionsAsPDF(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    const {
+      user: { exp_us_id },
+      query,
+    } = req;
+    const {
+      startDate,
+      endDate,
+      transaction_type = 'all',
+    } = query as {
+      startDate: string;
+      endDate: string;
+      format?: 'xlsx' | 'csv';
+      transaction_type?: 'all' | 'income' | 'expense';
+    };
+
+    const transactions = await this.expensifyService.getAllTransactions(exp_us_id, {
+      startDate,
+      endDate,
+      transaction_type:
+        transaction_type === 'income' ? 2 : transaction_type === 'expense' ? 1 : undefined,
+    });
+
+    if (!transactions || transactions.length === 0) {
+      return res
+        .status(204)
+        .json({ message: 'No transactions found for the selected date range.' });
+    }
+
+    const doc = new PDFDocument({
+      bufferPages: true,
+      size: 'A3',
+      margin: 35,
+    });
+
+    doc.pipe(res);
+
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(18)
+      .fillColor('black')
+      .text(
+        `Transactions Report (${moment(startDate).format('DD/MM/YYYY')} - ${moment(endDate).format('DD/MM/YYYY')})`,
+        { align: 'center' },
+      );
+    doc.moveDown();
+
+    doc
+      .font('Helvetica')
+      .fontSize(12)
+      .table({
+        columnStyles: ['40', '*', '*', '*', '*', '*', '*'],
+        rowStyles: (row) =>
+          row === 0
+            ? {
+                backgroundColor: '#ccc',
+                border: 1,
+              }
+            : {},
+        data: [
+          [
+            {
+              text: 'No',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Account Name',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Date',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Category',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Transaction Type',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Usage',
+              font: 'Helvetica-Bold',
+            },
+            {
+              text: 'Amount',
+              font: 'Helvetica-Bold',
+            },
+          ],
+          ...transactions.map((t, index) => [
+            String(index + 1),
+            t.exp_ba_name,
+            moment(t.exp_ts_date).format('DD/MM/YYYY') + ' ' + t.exp_ts_time || '',
+            t.exp_ts_category || '',
+            t.exp_ts_transaction_type || '',
+            t.exp_ts_title,
+            t.exp_ts_amount,
+          ]),
+        ],
+      });
+
+    doc.end();
   }
 }
