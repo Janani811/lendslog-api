@@ -78,7 +78,7 @@ export class ExpensifyService {
 
   async getAllTransactions(
     id: number,
-    args: { startDate?: string; endDate?: string; transaction_type?: number },
+    args: { startDate?: string; endDate?: string; transaction_type?: number;transaction_label?: string },
   ) {
     return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
   }

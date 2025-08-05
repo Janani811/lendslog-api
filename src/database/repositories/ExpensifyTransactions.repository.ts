@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { and, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, desc, eq, gte, ilike, lt } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -91,7 +91,13 @@ export class ExpensifyTransactionsRepository {
 
   async getAllTransactions(
     userId: number,
-    args: { startDate?: string; endDate?: string; accountId?: number; transaction_type?: number },
+    args: {
+      startDate?: string;
+      endDate?: string;
+      accountId?: number;
+      transaction_type?: number;
+      transaction_label?: string;
+    },
   ) {
     const conditions = [eq(expTransactions.exp_ts_user_id, userId)];
     if (args.startDate && args.endDate) {
@@ -105,6 +111,9 @@ export class ExpensifyTransactionsRepository {
     }
     if (args.transaction_type) {
       conditions.push(eq(expTransactions.exp_ts_transaction_type, args.transaction_type));
+    }
+    if (args.transaction_label) {
+      conditions.push(ilike(expTransactions.exp_ts_title, `%${args.transaction_label}%`));
     }
     return await this.dbObject.db
       .select({

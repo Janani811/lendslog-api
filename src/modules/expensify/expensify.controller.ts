@@ -105,10 +105,18 @@ export class ExpensifyController {
         user: { exp_us_id },
         query,
       } = req;
-      const { startDate, endDate } = query as { startDate: string; endDate: string };
+      const { startDate, endDate, transaction_type, search } = query as {
+        startDate: string;
+        endDate: string;
+        transaction_type?: 'all' | 'income' | 'expense';
+        search?: string;
+      };
       const data = await this.expensifyService.getAllTransactions(exp_us_id, {
         startDate,
         endDate,
+        transaction_type:
+          transaction_type === 'income' ? 2 : transaction_type === 'expense' ? 1 : undefined,
+        transaction_label: search ? search : undefined,
       });
       return res.status(200).json(data);
     } catch (error) {
