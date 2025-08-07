@@ -1,4 +1,6 @@
 import { ExpensifyBankAccountRepository } from './ExpensifyBankAccounts.repository';
+import { ExpensifyNotificationRepository } from './ExpensifyNotification.repository';
+import { ExpensifyNotificationTokenRepository } from './ExpensifyNotificationToken.repository';
 import { ExpensifyTransactionsRepository } from './ExpensifyTransactions.repository';
 import { ExpensifyTransactionsCategoryRepository } from './ExpensifyTransactionsCategory.repository';
 import { ExpensifyUserRepository } from './ExpensifyUser.repository';
@@ -20,4 +22,6 @@ export const repositories = [
   ExpensifyTransactionsCategoryRepository,
   ExpensifyBankAccountRepository,
   ExpStarredTransactionsRepository,
+  ExpensifyNotificationTokenRepository,
+  ExpensifyNotificationRepository,
 ];

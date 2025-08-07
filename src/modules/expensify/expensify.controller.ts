@@ -501,4 +501,27 @@ export class ExpensifyController {
 
     doc.end();
   }
+  @Put('enable-notification')
+  async enablePush(@Body() body: { token: string }, @Req() req: ExpressWithUser) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      return await this.expensifyService.acceptPushNotification(exp_us_id, body.token);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @Put('disable-notification')
+  async disablePush(@Body() body: { token: string }, @Req() req: ExpressWithUser) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      return await this.expensifyService.disablePushNotification(exp_us_id, body.token);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }

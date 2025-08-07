@@ -13,10 +13,12 @@ import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositori
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
+  SelectExpensifyNotificationToken,
   SelectExpensifyTransactionCategories,
 } from 'src/database/schemas/schema';
 import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
 import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
+import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
 
 @Injectable()
 export class ExpensifyService {
@@ -26,6 +28,7 @@ export class ExpensifyService {
     private expensifyTransactionsCategoryRepository: ExpensifyTransactionsCategoryRepository,
     private expensifyBankAccountRepository: ExpensifyBankAccountRepository,
     private expStarredTransactionsRepository: ExpStarredTransactionsRepository,
+    private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -149,4 +152,40 @@ export class ExpensifyService {
   async deleteCategory(id: number, userId: number) {
     return await this.expensifyTransactionsCategoryRepository.deleteCategory(id, userId);
   }
+  acceptPushNotification = async (
+      us_id: number,
+      token: string,
+    ): Promise<SelectExpensifyNotificationToken> => {
+      try {
+        // update existing device as inactive
+        // await this.notificationTokenRepository.update({
+        //   ntto_user_id: user.us_id
+        // },
+        // {
+        //   ntto_status: 0,
+        // });
+  
+        // save to db
+        const [notification_token] = await this.expensifyNotificationTokenRepository.add({
+          exp_ntto_user_id: us_id,
+          exp_ntto_status: 1,
+          exp_ntto_token: token,
+        });
+        return notification_token;
+      } catch (error) {
+        throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+      }
+    };
+    disablePushNotification = async (us_id: number, token: string): Promise<void> => {
+      try {
+        await this.expensifyNotificationTokenRepository.update(
+          { us_id, token },
+          {
+            exp_ntto_status: 0,
+          },
+        );
+      } catch (error) {
+        throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+      }
+    };
 }

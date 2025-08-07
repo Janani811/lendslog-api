@@ -330,3 +330,50 @@ export const expStarredTransactions = pgTable('exp_starred_transactions', {
 
 export type InsertExpensifyStarredTransactions = InferInsertModel<typeof expStarredTransactions>;
 export type SelectExpensifyStarredTransactions = InferSelectModel<typeof expStarredTransactions>;
+
+export const expNotificationToken = pgTable('exp_notification_token', {
+  exp_ntto_id: serial('exp_ntto_id').primaryKey(),
+
+  exp_ntto_user_id: integer('exp_ntto_user_id')
+    .notNull()
+    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+
+  exp_ntto_token: varchar('exp_ntto_token', { length: 255 }).notNull().unique(),
+
+  exp_ntto_status: integer('exp_ntto_status').default(1),
+
+  exp_ntto_created_at: timestamp('exp_ntto_created_at', { mode: 'string' }).defaultNow().notNull(),
+
+  exp_ntto_updated_at: timestamp('exp_ntto_updated_at', { mode: 'string' }).defaultNow(),
+});
+export const expNotificationTokenRelations = relations(expNotificationToken, ({ one }) => ({
+  notification: one(expNotificationLog, {
+    fields: [expNotificationToken.exp_ntto_user_id],
+    references: [expNotificationLog.exp_nl_user_id],
+  }),
+}));
+
+export type InsertExpensifyNotificationToken = InferInsertModel<typeof expNotificationToken>;
+export type SelectExpensifyNotificationToken = InferSelectModel<typeof expNotificationToken>;
+
+export const expNotificationLog = pgTable('exp_notification_log', {
+  exp_nl_id: serial('exp_nl_id').primaryKey(),
+  exp_nl_user_id: integer('exp_nl_user_id').notNull(),
+  exp_nl_status: integer('exp_nl_status').default(1),
+  exp_nl_created_at: timestamp('exp_nl_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  exp_nl_updated_at: timestamp('exp_nl_updated_at', {
+    mode: 'string',
+  }).$onUpdate(() => sql`now()`),
+  exp_nl_is_deleted: integer('exp_nl_is_deleted').default(0),
+  exp_nl_text: text('exp_nl_text'),
+  exp_nl_pending_count: integer('exp_nl_pending_count'),
+});
+
+export const expNotificationLogRelations = relations(expNotificationLog, ({ many }) => ({
+  notificationToken: many(expNotificationToken),
+}));
+
+export type InsertExpensifyNotificationLog = InferInsertModel<typeof expNotificationLog>;
+export type SelectExpensifyNotificationLog = InferSelectModel<typeof expNotificationLog>;
