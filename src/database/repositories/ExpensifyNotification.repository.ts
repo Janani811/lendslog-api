@@ -10,7 +10,7 @@ import {
   notificationToken,
 } from '../schemas/schema';
 
-export class ExpensifyNotificationRepository {
+export class ExpensifyNotificationLogRepository {
   constructor(
     @Inject(DB)
     private readonly dbObject: Database,
@@ -36,7 +36,7 @@ export class ExpensifyNotificationRepository {
     });
   }
 
-  async getTodayNotifications() {
+  async getTodayNotificationsLog() {
     return this.dbObject.db.query.expNotificationLog.findMany({
       where: and(eq(expNotificationLog.exp_nl_status, 1), sql`DATE(nt_created_at) = CURRENT_DATE`),
       with: {

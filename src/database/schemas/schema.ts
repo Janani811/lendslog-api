@@ -198,13 +198,16 @@ export const notificationTokenRelations = relations(notificationToken, ({ one })
 export type InsertNotificationToken = InferInsertModel<typeof notificationToken>;
 export type UpdateNotificationToken = InferSelectModel<typeof notificationToken>;
 
-export const expensify_users = pgTable('exp_users', {
+export const expensifyUsers = pgTable('exp_users', {
   exp_us_id: serial('exp_us_id').primaryKey(),
   exp_us_clerk_id: varchar('exp_us_clerk_id', { length: 255 }).notNull().unique(),
   exp_us_name: text('exp_us_name'),
   exp_us_email: text('exp_us_email'),
   exp_us_phone_no: text('exp_phone_no'),
   exp_us_is_deleted: boolean('exp_us_is_deleted').default(false),
+  exp_us_currency: text('exp_us_currency').default(null),
+  exp_us_default_transaction: integer('exp_us_default_transaction').default(1),
+  exp_us_default_grouping: text('exp_us_default_grouping').default('month'),
   exp_us_profile_url: text('exp_us_profile_url'),
   exp_us_created_at: timestamp('exp_us_created_at', { mode: 'string' })
     .notNull()
@@ -214,8 +217,8 @@ export const expensify_users = pgTable('exp_users', {
   }).$onUpdate(() => sql`now()`),
 });
 
-export type InsertExpensifyUser = InferInsertModel<typeof expensify_users>;
-export type SelectExpensifyUser = InferSelectModel<typeof expensify_users>;
+export type InsertExpensifyUser = InferInsertModel<typeof expensifyUsers>;
+export type SelectExpensifyUser = InferSelectModel<typeof expensifyUsers>;
 
 export const expTransactionTypes = pgTable('exp_transaction_types', {
   exp_tt_id: serial('exp_tt_id').primaryKey(),
@@ -253,7 +256,7 @@ export const expTransactions = pgTable('exp_transactions', {
   exp_ts_id: serial('exp_ts_id').primaryKey(),
   exp_ts_user_id: integer('exp_ts_user_id')
     .notNull()
-    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
   exp_ts_title: text('exp_ts_title').notNull(),
   exp_ts_amount: text('exp_ts_amount').notNull(),
   exp_ts_date: date('exp_ts_date').notNull(),
@@ -284,7 +287,7 @@ export const expBankAccounts = pgTable('exp_bank_accounts', {
 
   exp_ba_user_id: integer('exp_ba_user_id')
     .notNull()
-    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
 
   exp_ba_name: text('exp_ba_name').notNull(),
 
@@ -317,7 +320,7 @@ export const expStarredTransactions = pgTable('exp_starred_transactions', {
 
   exp_st_user_id: integer('exp_st_user_id')
     .notNull()
-    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
 
   exp_st_transaction_id: integer('exp_st_transaction_id')
     .notNull()
@@ -336,11 +339,13 @@ export const expNotificationToken = pgTable('exp_notification_token', {
 
   exp_ntto_user_id: integer('exp_ntto_user_id')
     .notNull()
-    .references(() => expensify_users.exp_us_id, { onDelete: 'cascade' }),
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
 
-  exp_ntto_token: varchar('exp_ntto_token', { length: 255 }).notNull().unique(),
+  exp_ntto_token: varchar('exp_ntto_token', { length: 255 }).notNull(),
 
   exp_ntto_status: integer('exp_ntto_status').default(1),
+
+  exp_ntto_time: text('exp_ntto_time').notNull(),
 
   exp_ntto_created_at: timestamp('exp_ntto_created_at', { mode: 'string' }).defaultNow().notNull(),
 

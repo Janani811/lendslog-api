@@ -501,27 +501,52 @@ export class ExpensifyController {
 
     doc.end();
   }
-  @Put('enable-notification')
-  async enablePush(@Body() body: { token: string }, @Req() req: ExpressWithUser) {
+  @Post('enable-notification')
+  async enablePush(
+    @Body() body: { token: string; time: string },
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
     try {
       const {
         user: { exp_us_id },
       } = req;
-      return await this.expensifyService.acceptPushNotification(exp_us_id, body.token);
+      await this.expensifyService.acceptPushNotification(exp_us_id, body);
+      return res.status(200).json({ message: 'Enabled successfully' });
     } catch (error) {
       console.error(error);
+      return res.status(401).json({ error: error.message });
     }
   }
 
   @Put('disable-notification')
-  async disablePush(@Body() body: { token: string }, @Req() req: ExpressWithUser) {
+  async disablePush(
+    @Body() body: { token: string },
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
     try {
       const {
         user: { exp_us_id },
       } = req;
-      return await this.expensifyService.disablePushNotification(exp_us_id, body.token);
+      await this.expensifyService.disablePushNotification(exp_us_id, body.token);
+      return res.status(200).json({ message: 'Enabled successfully' });
     } catch (error) {
       console.error(error);
+      return res.status(401).json({ error: error.message });
+    }
+  }
+  @Post('setting-changes')
+  async setCurrency(@Body() dto, @Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      await this.expensifyService.changeSettings(exp_us_id, dto);
+      return res.status(200).json({ message: 'Enabled successfully' });
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ error: error.message });
     }
   }
 }

@@ -13,8 +13,8 @@ import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositori
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
-  SelectExpensifyNotificationToken,
   SelectExpensifyTransactionCategories,
+  SelectExpensifyUser,
 } from 'src/database/schemas/schema';
 import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
 import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
@@ -81,7 +81,12 @@ export class ExpensifyService {
 
   async getAllTransactions(
     id: number,
-    args: { startDate?: string; endDate?: string; transaction_type?: number;transaction_label?: string },
+    args: {
+      startDate?: string;
+      endDate?: string;
+      transaction_type?: number;
+      transaction_label?: string;
+    },
   ) {
     return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
   }
@@ -152,40 +157,60 @@ export class ExpensifyService {
   async deleteCategory(id: number, userId: number) {
     return await this.expensifyTransactionsCategoryRepository.deleteCategory(id, userId);
   }
-  acceptPushNotification = async (
-      us_id: number,
-      token: string,
-    ): Promise<SelectExpensifyNotificationToken> => {
-      try {
-        // update existing device as inactive
-        // await this.notificationTokenRepository.update({
-        //   ntto_user_id: user.us_id
-        // },
-        // {
-        //   ntto_status: 0,
-        // });
-  
-        // save to db
-        const [notification_token] = await this.expensifyNotificationTokenRepository.add({
-          exp_ntto_user_id: us_id,
-          exp_ntto_status: 1,
-          exp_ntto_token: token,
-        });
-        return notification_token;
-      } catch (error) {
-        throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
-      }
-    };
-    disablePushNotification = async (us_id: number, token: string): Promise<void> => {
-      try {
+  acceptPushNotification = async (us_id: number, data: { token: string; time: string }) => {
+    try {
+      // update existing device as inactive
+      const notificationTokenEntry = await this.expensifyNotificationTokenRepository.getOne({
+        exp_ntto_user_id: us_id,
+        exp_ntto_token: data.token,
+      });
+
+      if (notificationTokenEntry) {
         await this.expensifyNotificationTokenRepository.update(
-          { us_id, token },
+          { us_id, token: data.token },
           {
-            exp_ntto_status: 0,
+            exp_ntto_status: 1,
           },
         );
-      } catch (error) {
-        throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+      }else{
+        await this.expensifyNotificationTokenRepository.add({
+          exp_ntto_user_id: us_id,
+          exp_ntto_status: 1,
+          exp_ntto_token: data.token,
+          exp_ntto_time: data.time,
+        });
       }
-    };
+
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+    }
+  };
+  disablePushNotification = async (us_id: number, token: string): Promise<void> => {
+    try {
+      await this.expensifyNotificationTokenRepository.update(
+        { us_id, token },
+        {
+          exp_ntto_status: 0,
+        },
+      );
+    } catch (error) {
+      throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
+    }
+  };
+  async updatePreference(user_id: number, dto: Partial<SelectExpensifyUser>){
+    try {
+      const existUser = await this.usersRepository.getOne({ user_id: user_id });
+      if (!existUser) {
+        throw new HttpException("Oops!, We can't find you in our database", HttpStatus.BAD_REQUEST);
+      }
+      await this.usersRepository.updateUser(dto, { exp_user_id: user_id});
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  async changeSettings(exp_us_id: number, dto:SelectExpensifyUser) {
+    await this.updatePreference(exp_us_id, dto);
+  }
 }

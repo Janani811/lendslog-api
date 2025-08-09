@@ -4,7 +4,11 @@ import { Inject } from '@nestjs/common';
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
 
-import { InsertExpensifyNotificationToken, expNotificationToken } from '../schemas/schema';
+import {
+  InsertExpensifyNotificationToken,
+  SelectExpensifyNotificationToken,
+  expNotificationToken,
+} from '../schemas/schema';
 
 export class ExpensifyNotificationTokenRepository {
   constructor(
@@ -36,5 +40,15 @@ export class ExpensifyNotificationTokenRepository {
         ),
       )
       .returning();
+  }
+
+  async getOne(args: Partial<SelectExpensifyNotificationToken>) {
+    const conditions = [];
+    Object.keys(args).map((item: keyof InsertExpensifyNotificationToken) => {
+      conditions.push(eq(expNotificationToken[item], args[item]));
+    });
+    return await this.dbObject.db.query.expNotificationToken.findFirst({
+      where: and(...conditions),
+    });
   }
 }

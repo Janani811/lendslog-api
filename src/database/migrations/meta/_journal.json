@@ -120,6 +120,27 @@
       "when": 1754502650717,
       "tag": "0016_nebulous_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1754754980018,
+      "tag": "0017_colorful_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1754755597728,
+      "tag": "0018_fast_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1754760834490,
+      "tag": "0019_awesome_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }
