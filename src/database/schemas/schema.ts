@@ -345,7 +345,7 @@ export const expNotificationToken = pgTable('exp_notification_token', {
 
   exp_ntto_status: integer('exp_ntto_status').default(1),
 
-  exp_ntto_time: text('exp_ntto_time').notNull(),
+  exp_ntto_time: text('exp_ntto_time'),
 
   exp_ntto_created_at: timestamp('exp_ntto_created_at', { mode: 'string' }).defaultNow().notNull(),
 

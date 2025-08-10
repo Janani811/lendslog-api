@@ -549,4 +549,13 @@ export class ExpensifyController {
       return res.status(401).json({ error: error.message });
     }
   }
+  @Get('getme')
+  async getProfile(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const user = await this.expensifyService.fetchProfile(req.user.exp_us_id);
+      res.status(200).json({ ...user });
+    } catch (error) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
 }

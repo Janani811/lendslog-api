@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 
 import {
   CreateBankAccountDto,
@@ -170,6 +170,7 @@ export class ExpensifyService {
           { us_id, token: data.token },
           {
             exp_ntto_status: 1,
+            exp_ntto_time: data.time,
           },
         );
       }else{
@@ -213,4 +214,24 @@ export class ExpensifyService {
   async changeSettings(exp_us_id: number, dto:SelectExpensifyUser) {
     await this.updatePreference(exp_us_id, dto);
   }
+   async fetchProfile(id: number) {
+      try {
+        const user = await this.usersRepository.getOne({
+          user_id: id,
+        }) as unknown as SelectExpensifyUser & { reminder_status: number, reminder_time: string};
+        const notificationTokenEntry = await this.expensifyNotificationTokenRepository.getOne({
+        exp_ntto_user_id: id,
+      });
+
+        if (!user) {
+          return null;
+        }
+        user.reminder_status = notificationTokenEntry.exp_ntto_status;
+        user.reminder_time = notificationTokenEntry.exp_ntto_time;
+        
+        return user;
+      } catch (e) {
+        throw new BadRequestException(e);
+      }
+    }
 }
