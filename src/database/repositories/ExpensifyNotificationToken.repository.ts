@@ -28,9 +28,6 @@ export class ExpensifyNotificationTokenRepository {
     exp_notification_token
   WHERE
     exp_ntto_status = 1
-    AND TO_TIMESTAMP(exp_ntto_time::text, 'HH12:MI AM')::time 
-        BETWEEN CURRENT_TIME::time 
-            AND (CURRENT_TIME + INTERVAL '20 minutes')::time
   LIMIT ${limit}
   OFFSET ${offset}
 `);
