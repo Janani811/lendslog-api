@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, between, eq, sql } from 'drizzle-orm';
 import { Inject } from '@nestjs/common';
 
 import { DB } from '../database.constants';
@@ -19,15 +19,27 @@ export class ExpensifyNotificationTokenRepository {
   async add(data: InsertExpensifyNotificationToken) {
     return await this.dbObject.db.insert(expNotificationToken).values(data).returning();
   }
-  async getAll(args: { user_id: number }, type: string) {
-    return this.dbObject.db.query.expNotificationToken.findMany({
-      where: and(
-        eq(expNotificationToken.exp_ntto_user_id, args.user_id),
-        type == 'today'
-          ? sql`DATE(nt_created_at) = CURRENT_DATE`
-          : sql`DATE(nt_created_at) != CURRENT_DATE`,
-      ),
-    });
+  async getAll(limit: number, offset: number) {
+    const results = await this.dbObject.db
+      .select({
+        token: expNotificationToken.exp_ntto_token,
+        userId: expNotificationToken.exp_ntto_user_id,
+      })
+      .from(expNotificationToken)
+      .where(
+        and(
+          eq(expNotificationToken.exp_ntto_status, 1),
+          between(
+            sql`TO_TIMESTAMP(${expNotificationToken.exp_ntto_time}, 'HH12:MI AM')::time`,
+            sql`CURRENT_TIME::time`,
+            sql`(CURRENT_TIME + INTERVAL '20 minutes')::time`,
+          ),
+        ),
+      )
+      .limit(limit)
+      .offset(offset);
+
+    return results;
   }
   async update(args: { us_id: number; token: string }, data: any) {
     return await this.dbObject.db

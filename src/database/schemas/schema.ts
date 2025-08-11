@@ -363,7 +363,7 @@ export type SelectExpensifyNotificationToken = InferSelectModel<typeof expNotifi
 
 export const expNotificationLog = pgTable('exp_notification_log', {
   exp_nl_id: serial('exp_nl_id').primaryKey(),
-  exp_nl_user_id: integer('exp_nl_user_id').notNull(),
+  exp_nl_user_id: integer('exp_nl_user_id').default(null),
   exp_nl_status: integer('exp_nl_status').default(1),
   exp_nl_created_at: timestamp('exp_nl_created_at', { mode: 'string' })
     .notNull()
@@ -372,8 +372,8 @@ export const expNotificationLog = pgTable('exp_notification_log', {
     mode: 'string',
   }).$onUpdate(() => sql`now()`),
   exp_nl_is_deleted: integer('exp_nl_is_deleted').default(0),
-  exp_nl_text: text('exp_nl_text'),
-  exp_nl_pending_count: integer('exp_nl_pending_count'),
+  exp_nl_text: text('exp_nl_text').default(null),
+  exp_nl_pending_count: integer('exp_nl_pending_count').default(null),
 });
 
 export const expNotificationLogRelations = relations(expNotificationLog, ({ many }) => ({

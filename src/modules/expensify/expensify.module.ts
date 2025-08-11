@@ -7,12 +7,13 @@ import { AuthExpensifyMiddleware } from './middleware/auth-expensify.middleware'
 
 import { ExpensifyService } from './expensify.service';
 import { ConfigService } from '@nestjs/config';
+import { ExpensifyNotificationService } from './expensify-notification.service';
 
 @Global()
 @Module({
   imports: [DatabaseModule],
   controllers: [ExpensifyController],
-  providers: [ExpensifyService, AuthExpensifyMiddleware],
+  providers: [ExpensifyService, AuthExpensifyMiddleware, ExpensifyNotificationService],
   exports: [ExpensifyService, AuthExpensifyMiddleware],
 })
 export class ExpensifyModule implements NestModule {

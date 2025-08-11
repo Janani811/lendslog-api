@@ -173,7 +173,7 @@ export class ExpensifyService {
             exp_ntto_time: data.time,
           },
         );
-      }else{
+      } else {
         await this.expensifyNotificationTokenRepository.add({
           exp_ntto_user_id: us_id,
           exp_ntto_status: 1,
@@ -181,7 +181,6 @@ export class ExpensifyService {
           exp_ntto_time: data.time,
         });
       }
-
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
@@ -199,39 +198,40 @@ export class ExpensifyService {
       throw new HttpException(error.message || 'Something went wrong', HttpStatus.BAD_REQUEST);
     }
   };
-  async updatePreference(user_id: number, dto: Partial<SelectExpensifyUser>){
+  async updatePreference(user_id: number, dto: Partial<SelectExpensifyUser>) {
     try {
       const existUser = await this.usersRepository.getOne({ user_id: user_id });
       if (!existUser) {
         throw new HttpException("Oops!, We can't find you in our database", HttpStatus.BAD_REQUEST);
       }
-      await this.usersRepository.updateUser(dto, { exp_user_id: user_id});
+      await this.usersRepository.updateUser(dto, { exp_user_id: user_id });
     } catch (e) {
       console.log(e);
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
   }
-  async changeSettings(exp_us_id: number, dto:SelectExpensifyUser) {
+  async changeSettings(exp_us_id: number, dto: SelectExpensifyUser) {
     await this.updatePreference(exp_us_id, dto);
   }
-   async fetchProfile(id: number) {
-      try {
-        const user = await this.usersRepository.getOne({
-          user_id: id,
-        }) as unknown as SelectExpensifyUser & { reminder_status: number, reminder_time: string};
-        const notificationTokenEntry = await this.expensifyNotificationTokenRepository.getOne({
+  async fetchProfile(id: number) {
+    try {
+      const user = (await this.usersRepository.getOne({
+        user_id: id,
+      })) as unknown as SelectExpensifyUser & { reminder_status: number; reminder_time: string };
+      const notificationTokenEntry = await this.expensifyNotificationTokenRepository.getOne({
         exp_ntto_user_id: id,
       });
 
-        if (!user) {
-          return null;
-        }
-        user.reminder_status = notificationTokenEntry.exp_ntto_status;
-        user.reminder_time = notificationTokenEntry.exp_ntto_time;
-        
-        return user;
-      } catch (e) {
-        throw new BadRequestException(e);
+      if (!user) {
+        return null;
       }
+      user.reminder_status = notificationTokenEntry.exp_ntto_status;
+      user.reminder_time = notificationTokenEntry.exp_ntto_time;
+
+      return user;
+    } catch (e) {
+      throw new BadRequestException(e);
     }
+  }
+
 }

@@ -13,6 +13,7 @@ export class CronjobsController {
       // res.status(200).json('Cron initiaited');
       await this.cronjobsService.generateNotifications();
       await this.cronjobsService.sendNotification();
+      await this.cronjobsService.expensifySendNotification();
       console.log('********* Pending Notification Reminder Completed ********');
     } catch (error) {
       console.error(error);

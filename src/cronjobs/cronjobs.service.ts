@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ExpoPushMessage } from 'expo-server-sdk';
+import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
 // import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { NotificationRepository } from 'src/database/repositories/Notification.repository';
 import { UserRepository } from 'src/database/repositories/User.repository';
+import { ExpensifyNotificationService } from 'src/modules/expensify/expensify-notification.service';
 
 import { NotificationService } from 'src/notification/notification.service';
 
@@ -12,6 +15,8 @@ export class CronjobsService {
     private userRepository: UserRepository,
     private notificationRepository: NotificationRepository,
     private notificationService: NotificationService,
+    private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
+    private expensifyNotificationService: ExpensifyNotificationService,
   ) {}
   // @Cron('40 2 * * *')
   // async openForBusiness() {
@@ -58,6 +63,40 @@ export class CronjobsService {
         await this.notificationRepository.update({ nt_status: 2 }, notificationIds);
       }
       console.log('********* Send Notifications Completed ********');
+    } catch (error) {
+      throw error;
+    }
+  }
+  async expensifySendNotification() {
+    const count = 200;
+    let record = [];
+    let iteration = 1;
+    try {
+      console.log('********* Send Expo Notification Initiated ********');
+
+      do {
+        const messages: ExpoPushMessage[] = [];
+        record = await this.expensifyNotificationTokenRepository.getAll(count, iteration * count);
+        if (!record.length) {
+          break;
+        }
+        for (let i = 0; i < record.length; i++) {
+          const notificationTokens = record[i].token;
+          const title = 'Today Reminder';
+          const body = `You have expenses to log for today. Don't forget to keep your budget on track!`;
+          messages.push({
+            to: notificationTokens,
+            title,
+            sound: 'default',
+            body,
+            priority: 'high',
+          });
+        }
+        await this.expensifyNotificationService.sendNotifications(messages);
+        iteration = iteration + 1;
+      } while (record.length > 0);
+      console.log('********* Send Notifications Completed ********');
+      return true;
     } catch (error) {
       throw error;
     }
