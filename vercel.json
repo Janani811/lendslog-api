@@ -19,7 +19,7 @@
     "crons": [
       {
         "path": "/crons",
-        "schedule": "0 10,19 * * *"
+        "schedule": "0 11 * * *"
       }
     ]
   }
