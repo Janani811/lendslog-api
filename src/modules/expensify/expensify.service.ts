@@ -157,7 +157,7 @@ export class ExpensifyService {
   async deleteCategory(id: number, userId: number) {
     return await this.expensifyTransactionsCategoryRepository.deleteCategory(id, userId);
   }
-  acceptPushNotification = async (us_id: number, data: { token: string; time: string }) => {
+  acceptPushNotification = async (us_id: number, data: { token: string }) => {
     try {
       // update existing device as inactive
       const notificationTokenEntry = await this.expensifyNotificationTokenRepository.getOne({
@@ -170,7 +170,6 @@ export class ExpensifyService {
           { us_id, token: data.token },
           {
             exp_ntto_status: 1,
-            exp_ntto_time: data.time,
           },
         );
       } else {
@@ -178,7 +177,6 @@ export class ExpensifyService {
           exp_ntto_user_id: us_id,
           exp_ntto_status: 1,
           exp_ntto_token: data.token,
-          exp_ntto_time: data.time,
         });
       }
     } catch (error) {

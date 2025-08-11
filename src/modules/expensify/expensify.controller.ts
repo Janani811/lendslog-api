@@ -503,7 +503,7 @@ export class ExpensifyController {
   }
   @Post('enable-notification')
   async enablePush(
-    @Body() body: { token: string; time: string },
+    @Body() body: { token: string },
     @Req() req: ExpressWithUser,
     @Res() res: Express.Response,
   ) {
