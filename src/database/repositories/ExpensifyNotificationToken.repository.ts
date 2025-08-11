@@ -1,4 +1,4 @@
-import { and, between, eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { Inject } from '@nestjs/common';
 
 import { DB } from '../database.constants';
@@ -20,26 +20,22 @@ export class ExpensifyNotificationTokenRepository {
     return await this.dbObject.db.insert(expNotificationToken).values(data).returning();
   }
   async getAll(limit: number, offset: number) {
-    const results = await this.dbObject.db
-      .select({
-        token: expNotificationToken.exp_ntto_token,
-        userId: expNotificationToken.exp_ntto_user_id,
-      })
-      .from(expNotificationToken)
-      .where(
-        and(
-          eq(expNotificationToken.exp_ntto_status, 1),
-          between(
-            sql`TO_TIMESTAMP(${expNotificationToken.exp_ntto_time}, 'HH12:MI AM')::time`,
-            sql`CURRENT_TIME::time`,
-            sql`(CURRENT_TIME + INTERVAL '20 minutes')::time`,
-          ),
-        ),
-      )
-      .limit(limit)
-      .offset(offset);
+    const results = await this.dbObject.db.execute(sql`
+  SELECT
+    exp_ntto_token,
+    exp_ntto_user_id
+  FROM
+    exp_notification_token
+  WHERE
+    exp_ntto_status = 1
+    AND TO_TIMESTAMP(exp_ntto_time::text, 'HH12:MI AM')::time 
+        BETWEEN CURRENT_TIME::time 
+            AND (CURRENT_TIME + INTERVAL '20 minutes')::time
+  LIMIT ${limit}
+  OFFSET ${offset}
+`);
 
-    return results;
+    return results.rows;
   }
   async update(args: { us_id: number; token: string }, data: any) {
     return await this.dbObject.db

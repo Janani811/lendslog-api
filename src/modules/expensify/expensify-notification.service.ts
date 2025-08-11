@@ -7,7 +7,7 @@ export class ExpensifyNotificationService implements OnModuleInit {
 
   onModuleInit() {
     this.expo = new Expo({
-      accessToken: process.env.EXPO_ACCESS_TOKEN,
+      accessToken: process.env.EXPENSIFY_EXPO_PUSH_NOTIFICATION_ACCESS_TOKEN,
       useFcmV1: true,
     });
   }

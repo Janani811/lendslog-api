@@ -70,7 +70,7 @@ export class CronjobsService {
   async expensifySendNotification() {
     const count = 200;
     let record = [];
-    let iteration = 1;
+    let iteration = 0;
     try {
       console.log('********* Send Expo Notification Initiated ********');
 
@@ -81,11 +81,11 @@ export class CronjobsService {
           break;
         }
         for (let i = 0; i < record.length; i++) {
-          const notificationTokens = record[i].token;
+          const notificationToken = record[i].exp_ntto_token;
           const title = 'Today Reminder';
           const body = `You have expenses to log for today. Don't forget to keep your budget on track!`;
           messages.push({
-            to: notificationTokens,
+            to: notificationToken,
             title,
             sound: 'default',
             body,
