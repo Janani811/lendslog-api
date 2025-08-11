@@ -76,11 +76,11 @@ export class ExpensifyController {
         return res.status(400).json({ error: 'Missing Clerk user id or email in webhook payload' });
       }
 
+      const email = email_addresses?.[0]?.email_address;
+      const phone = phone_numbers?.[0]?.phone_number;
+      const name = first_name;
       switch (eventType) {
         case 'user.created':
-          const email = email_addresses?.[0]?.email_address;
-          const phone = phone_numbers?.[0]?.phone_number;
-          const name = first_name;
           await this.expensifyService.signup({ phone, name, email, id });
           return res.status(201).json({ message: 'User created successfully' });
         case 'user.updated':
@@ -95,7 +95,7 @@ export class ExpensifyController {
       return res.status(200).json({ message: 'User response received' });
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(401).json({ error: error.message });
     }
   }
   @Get('transactions')
