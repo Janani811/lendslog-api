@@ -555,7 +555,8 @@ export class ExpensifyController {
       const user = await this.expensifyService.fetchProfile(req.user.exp_us_id);
       res.status(200).json({ ...user });
     } catch (error) {
-      return res.status(403).json({ error: error.message });
+      console.log(error);
+      return res.status(401).json({ error: error.message });
     }
   }
 }
