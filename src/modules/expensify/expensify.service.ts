@@ -223,8 +223,8 @@ export class ExpensifyService {
       if (!user) {
         return null;
       }
-      user.reminder_status = notificationTokenEntry.exp_ntto_status;
-      user.reminder_time = notificationTokenEntry.exp_ntto_time;
+      user.reminder_status = notificationTokenEntry?.exp_ntto_status;
+      user.reminder_time = notificationTokenEntry?.exp_ntto_time;
 
       return user;
     } catch (e) {

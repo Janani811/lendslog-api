@@ -556,7 +556,7 @@ export class ExpensifyController {
       res.status(200).json({ ...user });
     } catch (error) {
       console.log(error);
-      return res.status(401).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 }
