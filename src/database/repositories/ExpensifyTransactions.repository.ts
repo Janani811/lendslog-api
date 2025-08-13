@@ -40,6 +40,7 @@ export class ExpensifyTransactionsRepository {
         exp_st_id: expStarredTransactions.exp_st_id,
         exp_tc_icon: expTransactionCategories.exp_tc_icon,
         exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
+        exp_ts_bank_account_id: expTransactions.exp_ts_bank_account_id,
       })
       .from(expTransactions)
       .innerJoin(
