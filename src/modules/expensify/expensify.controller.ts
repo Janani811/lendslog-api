@@ -467,6 +467,10 @@ export class ExpensifyController {
               font: 'Helvetica-Bold',
             },
             {
+              text: 'Title',
+              font: 'Helvetica-Bold',
+            },
+            {
               text: 'Date',
               font: 'Helvetica-Bold',
             },
@@ -479,10 +483,6 @@ export class ExpensifyController {
               font: 'Helvetica-Bold',
             },
             {
-              text: 'Usage',
-              font: 'Helvetica-Bold',
-            },
-            {
               text: 'Amount',
               font: 'Helvetica-Bold',
             },
@@ -490,10 +490,12 @@ export class ExpensifyController {
           ...transactions.map((t, index) => [
             String(index + 1),
             t.exp_ba_name,
-            moment(t.exp_ts_date).format('DD/MM/YYYY') + ' ' + t.exp_ts_time || '',
+            t.exp_ts_title,
+            moment(t.exp_ts_date + ' ' + t.exp_ts_time, 'DD/MM/YYYY HH:mm a').format(
+              'DD/MM/YYYY HH:mm',
+            ) || '',
             t.exp_ts_category || '',
             t.exp_ts_transaction_type || '',
-            t.exp_ts_title,
             t.exp_ts_amount,
           ]),
         ],
@@ -558,5 +560,103 @@ export class ExpensifyController {
       console.log(error);
       return res.status(400).json({ error: error.message });
     }
+  }
+  @Post('import-data')
+  async importExcel(@Body() body: { headers: string[]; data: any }, @Res() res: Express.Response) {
+    const { headers, data } = body;
+
+    if (!headers || !data || !Array.isArray(data))
+      return res.status(400).json({ error: 'Body parameters missing' });
+
+    const isValid = ['title', 'amount', 'date', 'transaction_type'].every((item: any) =>
+      Boolean(headers[item]),
+    );
+
+    if (!isValid) return res.status(400).json({ error: 'Required parameters missing' });
+
+    const processed = data.map((row, idx) => {
+      const errors: string[] = [];
+
+      if (!row[headers['title']] || typeof row[headers['title']] !== 'string') {
+        errors.push('Missing or invalid title');
+      }
+
+      const amount = Number(row[headers['amount']]);
+      if (isNaN(amount)) {
+        errors.push('Invalid amount');
+      }
+
+      const rawDate = row[headers['date']];
+      let date: string | null = null;
+
+      if (rawDate) {
+        const parsed = moment(
+          rawDate,
+          ['D/M/YYYY HH:mm:ss', 'DD/MM/YYYY HH:mm:ss', 'D/MM/YYYY HH:mm:ss', 'DD/M/YYYY HH:mm:ss'],
+          false,
+        );
+        if (parsed.isValid()) {
+          date = parsed.format('DD/MM/YYYY HH:mm');
+        } else {
+          errors.push(`Invalid date format: ${rawDate}`);
+        }
+      } else {
+        errors.push('Missing date');
+      }
+      let category_id = null;
+      let transaction_id = null;
+      const validTypes = ['income', 'expense'];
+      if (
+        !row[headers['transaction_type']] ||
+        !validTypes.includes(row[headers['transaction_type']].toLowerCase())
+      ) {
+        errors.push('Invalid or missing transaction type');
+      }
+      if (validTypes.includes(row[headers['transaction_type']].toLowerCase())) {
+        category_id = row[headers['transaction_type']]
+          ? row[headers['transaction_type']].toLowerCase() === 'income'
+            ? 12
+            : 6
+          : null;
+        transaction_id = row[headers['transaction_type']]
+          ? row[headers['transaction_type']].toLowerCase() === 'income'
+            ? 2
+            : 1
+          : null;
+      }
+
+      const note = row['note'] || '';
+
+      return {
+        row: idx + 1,
+        title: row[headers['title']] || '',
+        amount: isNaN(amount) ? null : amount,
+        date,
+        transaction_type: row[headers['transaction_type']] || '',
+        transaction_id,
+        category_id,
+        note,
+        status: errors.length === 0 ? 'valid' : 'invalid',
+        errors,
+      };
+    });
+
+    const invalidRows = processed
+      .filter((r) => r.status === 'invalid')
+      .map((r) => ({ ...r, errors: r.errors.join(', ') }));
+    // console.log(invalidRows);
+
+    const validRows = processed
+      .filter((r) => r.status === 'valid')
+      .map((r) => ({ ...r, errors: '' }));
+    // console.log(validRows);
+
+    res.status(200).json({
+      message: 'Excel processed successfully',
+      headers,
+      totalRows: data.length,
+      validRows,
+      invalidRows,
+    });
   }
 }
