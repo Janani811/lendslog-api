@@ -32,8 +32,8 @@ export class TransactionDto {
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/, {
-    message: 'Time must be in HH:MM AM/PM format',
+  @Matches(/^[0-2][0-9]:[0-5][0-9]$/, {
+    message: 'Time must be in HH:MM format',
   })
   exp_ts_time!: string;
 

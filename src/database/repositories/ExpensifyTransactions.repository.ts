@@ -71,6 +71,16 @@ export class ExpensifyTransactionsRepository {
       });
     }
   }
+  async save(transactions: InsertExpensifyTransactions[]) {
+    await this.dbObject.db.transaction(async (tx) => {
+      await Promise.all(
+        transactions.map(async (item) => {
+          await tx.insert(expTransactions).values(item).returning();
+        }),
+      );
+    });
+    return true;
+  }
   async updateTransaction(id: number, data: TransactionDto) {
     const isStarred = data.exp_st_id;
     delete data.exp_st_id;

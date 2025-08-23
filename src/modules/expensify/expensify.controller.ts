@@ -23,6 +23,7 @@ import { ExpressWithUser } from './type';
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
+  InsertExpensifyTransactions,
   SelectExpensifyTransactionCategories,
 } from 'src/database/schemas/schema';
 import {
@@ -366,8 +367,8 @@ export class ExpensifyController {
         category: t.exp_ts_category || '',
         transactions_type: t.exp_ts_transaction_type || '',
         date: t.exp_ts_date
-          ? `${moment(`${t.exp_ts_date} ${t.exp_ts_time}`, 'YYYY-MM-DD hh:mm a').format(
-              'DD/MM/YYYY hh:mm A',
+          ? `${moment(`${t.exp_ts_date} ${t.exp_ts_time}`, 'YYYY-MM-DD HH:mm').format(
+              'DD/MM/YYYY HH:mm',
             )}`
           : '',
         account_name: t.exp_ba_name,
@@ -491,7 +492,7 @@ export class ExpensifyController {
             String(index + 1),
             t.exp_ba_name,
             t.exp_ts_title,
-            moment(t.exp_ts_date + ' ' + t.exp_ts_time, 'DD/MM/YYYY HH:mm a').format(
+            moment(t.exp_ts_date + ' ' + t.exp_ts_time, 'YYYY-MM-DD HH:mm').format(
               'DD/MM/YYYY HH:mm',
             ) || '',
             t.exp_ts_category || '',
@@ -657,6 +658,49 @@ export class ExpensifyController {
       totalRows: data.length,
       validRows,
       invalidRows,
+    });
+  }
+  @Post('bulk-transactions')
+  async bulkTransactions(
+    @Req() req: ExpressWithUser,
+    @Body() body: { headers: Record<string, string>; data: any },
+    @Res() res: Express.Response,
+  ) {
+    const { headers, data } = body;
+
+    if (!headers || !data || !Array.isArray(data))
+      return res.status(400).json({ error: 'Body parameters missing' });
+
+    const isValid = ['title', 'amount', 'date', 'transaction_type', 'account'].every((item: any) =>
+      Boolean(headers[item]),
+    );
+
+    if (!isValid) return res.status(400).json({ error: 'Required parameters missing' });
+
+    const processed: any = data.map((row) => {
+      const parsed = moment(row['date'], 'DD/MM/YYYY HH:mm');
+      const date = parsed.format('YYYY-MM-DD');
+      const time = parsed.format('HH:mm');
+      return {
+        exp_ts_title: row['title'] || '',
+        exp_ts_amount: row['amount'],
+        exp_ts_date: date,
+        exp_ts_time: time,
+        exp_ts_transaction_type: row['transaction_id'],
+        exp_ts_category: row['category_id'],
+        exp_ts_note: row['note'],
+        exp_ts_user_id: req.user.exp_us_id,
+        exp_ts_bank_account_id: headers.account,
+      };
+    }) as unknown as InsertExpensifyTransactions[];
+
+    if (processed.length) {
+      await this.expensifyService.bulkTransactions(processed);
+    }
+
+    res.status(200).json({
+      message: 'Excel processed successfully',
+      headers,
     });
   }
 }

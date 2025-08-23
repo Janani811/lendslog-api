@@ -13,6 +13,7 @@ import { ExpensifyTransactionsCategoryRepository } from 'src/database/repositori
 import {
   InsertExpensifyBankAccounts,
   InsertExpensifyTransactionCategories,
+  InsertExpensifyTransactions,
   SelectExpensifyTransactionCategories,
   SelectExpensifyUser,
 } from 'src/database/schemas/schema';
@@ -231,5 +232,14 @@ export class ExpensifyService {
       throw new BadRequestException(e);
     }
   }
+  async bulkTransactions(transactions: InsertExpensifyTransactions[]) {
+    try {
+      await this.expensifyTransactionsRepository.save(transactions);
 
+      return true;
+    } catch (e) {
+      console.log(e);
+      throw new BadRequestException(e);
+    }
+  }
 }
