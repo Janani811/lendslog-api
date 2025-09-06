@@ -28,7 +28,7 @@ export class ExpensifyBankAccountRepository {
     const account = data as unknown as InsertExpensifyBankAccounts;
     return await this.dbObject.db.insert(expBankAccounts).values(account).returning();
   }
-  async updateBankAccount(data: InsertExpensifyBankAccounts, id: number) {
+  async updateBankAccount(data: Partial<InsertExpensifyBankAccounts>, id: number) {
     return await this.dbObject.db
       .update(expBankAccounts)
       .set(data)

@@ -104,7 +104,7 @@ export class ExpensifyService {
     const [account] = await this.expensifyBankAccountRepository.getAllBankAccount(
       dto.exp_ts_user_id,
     );
-    if (account) {
+    if (account && !dto.exp_ts_bank_account_id) {
       dto.exp_ts_bank_account_id = account.exp_ba_id;
     }
     return await this.expensifyTransactionsRepository.createTransaction(dto);
