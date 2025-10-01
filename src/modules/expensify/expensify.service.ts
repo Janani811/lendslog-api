@@ -234,8 +234,12 @@ export class ExpensifyService {
   }
   async bulkTransactions(transactions: InsertExpensifyTransactions[]) {
     try {
-      await this.expensifyTransactionsRepository.save(transactions);
-
+      const chunkSize = 20;
+      
+      for (let i = 0; i < transactions.length; i += chunkSize) {
+        const chunk = transactions.slice(i, i + chunkSize);
+        await this.expensifyTransactionsRepository.save(chunk);
+      }
       return true;
     } catch (e) {
       console.log(e);
