@@ -120,11 +120,7 @@ export class ExpensifyTransactionsRepository {
     const newBalance = (currentBalance + totalTransactionAmount).toFixed(2);
 
     await this.dbObject.db.transaction(async (tx) => {
-      await Promise.all(
-        transactions.map(async (item) => {
-          await tx.insert(expTransactions).values(item).returning();
-        }),
-      );
+      await tx.insert(expTransactions).values(transactions).returning();
       await tx
         .update(expBankAccounts)
         .set({ exp_ba_balance: newBalance })
