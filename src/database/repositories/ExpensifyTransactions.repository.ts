@@ -295,7 +295,7 @@ export class ExpensifyTransactionsRepository {
         expTransactionCategories,
         eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
       )
-      .orderBy(desc(expTransactions.exp_ts_date))
+      .orderBy(desc(expTransactions.exp_ts_created_at))
       .where(and(...conditions));
   }
 
