@@ -4,7 +4,7 @@ import { and, asc, eq, or } from 'drizzle-orm';
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
 
-import { expBankAccounts, InsertExpensifyBankAccounts } from '../schemas/schema';
+import { expBankAccounts, expTransactions, InsertExpensifyBankAccounts } from '../schemas/schema';
 import { ExpensifyTransactionsRepository } from './ExpensifyTransactions.repository';
 import { CreateBankAccountDto } from 'src/modules/expensify/dto/auth.dto';
 
@@ -35,8 +35,21 @@ export class ExpensifyBankAccountRepository {
       .where(eq(expBankAccounts.exp_ba_id, id))
       .returning();
   }
-  async deleteBankAccount(id: number) {
-    return await this.dbObject.db.delete(expBankAccounts).where(eq(expBankAccounts.exp_ba_id, id));
+  async deleteBankAccount(id: number, userId: number) {
+    await this.dbObject.db.transaction(async (tx) => {
+      await this.dbObject.db.delete(expBankAccounts).where(eq(expBankAccounts.exp_ba_id, id));
+      await tx
+        .delete(expTransactions)
+        .where(
+          and(
+            eq(expTransactions.exp_ts_bank_account_id, id),
+            eq(expTransactions.exp_ts_user_id, userId),
+          ),
+        )
+        .returning();
+    });
+
+    return true;
   }
 
   async getAllBankAccount(id: number) {

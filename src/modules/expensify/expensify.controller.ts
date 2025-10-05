@@ -281,8 +281,20 @@ export class ExpensifyController {
   }
 
   @Delete('accounts/:id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.expensifyService.removeAccount(id);
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      await this.expensifyService.removeAccount(id, exp_us_id);
+      return res.status(200).json({ message: 'Account deleted successfully' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 
   @Post('starred')

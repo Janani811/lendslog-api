@@ -128,8 +128,8 @@ export class ExpensifyService {
   async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
     return await this.expensifyBankAccountRepository.updateBankAccount(dto, id);
   }
-  async removeAccount(id: number) {
-    return await this.expensifyBankAccountRepository.deleteBankAccount(id);
+  async removeAccount(id: number, userId: number) {
+    return await this.expensifyBankAccountRepository.deleteBankAccount(id, userId);
   }
 
   async starTransaction(dto: CreateStarredTransactionDto) {
