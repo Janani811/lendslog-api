@@ -28,9 +28,11 @@ import {
 } from 'src/database/schemas/schema';
 import {
   CreateBankAccountDto,
+  CreateBudgetDto,
   CreateStarredTransactionDto,
   TransactionDto,
   UpdateBankAccountDto,
+  UpdateBudgetDto,
 } from './dto/auth.dto';
 import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
@@ -122,7 +124,7 @@ export class ExpensifyController {
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
   @Post('transactions')
@@ -146,7 +148,7 @@ export class ExpensifyController {
       return res.status(200).json({ message: 'Successfully added' });
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
   @Get('transaction/:id')
@@ -158,7 +160,7 @@ export class ExpensifyController {
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
   @Put('transaction/:id')
@@ -185,7 +187,7 @@ export class ExpensifyController {
       return res.status(200).json({ message: 'Updated successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
   @Delete('transaction/:id')
@@ -203,7 +205,7 @@ export class ExpensifyController {
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -221,7 +223,7 @@ export class ExpensifyController {
       return res.status(200).json({ message: 'Category created successfully' });
     } catch (error) {
       console.log(error);
-      return res.status(403).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -714,5 +716,63 @@ export class ExpensifyController {
       message: 'Excel processed successfully',
       headers,
     });
+  }
+  @Get('budgets')
+  async getTransactionsByCategories(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+        query,
+      } = req;
+      const { startDate, endDate } = query as {
+        startDate: string;
+        endDate: string;
+      };
+      const data = await this.expensifyService.getAllTransactionsByCategory(exp_us_id, {
+        startDate,
+        endDate,
+        transaction_type: 1,
+      });
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  @Post('budget')
+  async createBudget(
+    @Body() dto: CreateBudgetDto,
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      dto.exp_bg_user_id = exp_us_id;
+      await this.expensifyService.createBudget(dto);
+      return res.status(200).json({ message: 'Budget Added' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  @Patch('budget/:id')
+  async editBudget(
+    @Body() dto: UpdateBudgetDto,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      await this.expensifyService.updateBudget(dto, id);
+      return res.status(200).json({ message: 'Budget updated' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  @Delete('budget/:id')
+  async deleteBudget(@Param('id', ParseIntPipe) id: number) {
+    return this.expensifyService.deleteBudget(id);
   }
 }

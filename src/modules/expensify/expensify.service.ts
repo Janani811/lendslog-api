@@ -3,9 +3,11 @@ import { Injectable, HttpException, HttpStatus, BadRequestException } from '@nes
 
 import {
   CreateBankAccountDto,
+  CreateBudgetDto,
   CreateStarredTransactionDto,
   ExpensifySignUpDto,
   TransactionDto,
+  UpdateBudgetDto,
 } from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 import { ExpensifyTransactionsRepository } from 'src/database/repositories/ExpensifyTransactions.repository';
@@ -20,6 +22,7 @@ import {
 import { ExpensifyBankAccountRepository } from 'src/database/repositories/ExpensifyBankAccounts.repository';
 import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
 import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
+import { ExpensifyBudgetRepository } from 'src/database/repositories/ExpBudget.repository';
 
 @Injectable()
 export class ExpensifyService {
@@ -30,6 +33,7 @@ export class ExpensifyService {
     private expensifyBankAccountRepository: ExpensifyBankAccountRepository,
     private expStarredTransactionsRepository: ExpStarredTransactionsRepository,
     private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
+    private expensifyBudgetRepository: ExpensifyBudgetRepository,
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -240,5 +244,25 @@ export class ExpensifyService {
       console.log(e);
       throw new BadRequestException(e);
     }
+  }
+    async getAllTransactionsByCategory(
+    id: number,
+    args: {
+      startDate?: string;
+      endDate?: string;
+      transaction_type?: number;
+    },
+  ) {
+    return await this.expensifyTransactionsRepository.getAllTransactionsByCategory(id, args);
+  }
+  async createBudget(dto: CreateBudgetDto) {
+    return await this.expensifyBudgetRepository.addBudget(dto);
+  }
+   async updateBudget(dto: UpdateBudgetDto, id: number) {
+    return await this.expensifyBudgetRepository.updateBudget(dto, 
+      id);
+  }
+  async deleteBudget(id: number) {
+    return await this.expensifyBudgetRepository.removeBudget(id);
   }
 }

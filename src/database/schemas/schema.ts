@@ -382,3 +382,20 @@ export const expNotificationLogRelations = relations(expNotificationLog, ({ many
 
 export type InsertExpensifyNotificationLog = InferInsertModel<typeof expNotificationLog>;
 export type SelectExpensifyNotificationLog = InferSelectModel<typeof expNotificationLog>;
+
+export const expBudgets = pgTable('exp_budgets', {
+  exp_bg_id: serial('exp_bg_id').primaryKey(),
+  exp_bg_user_id: integer('exp_bg_user_id')
+    .notNull()
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
+  exp_bg_amount: text('exp_bg_amount').notNull(),
+  exp_bg_category_id: integer('exp_bg_category_id')
+    .notNull()
+    .references(() => expTransactionCategories.exp_tc_id, { onDelete: 'cascade' }),
+  exp_bg_date: date('exp_bg_date').notNull(),
+  exp_bg_created_at: timestamp('exp_bg_created_at').defaultNow().notNull(),
+  exp_bg_updated_at: timestamp('exp_bg_updated_at').defaultNow().notNull(),
+});
+
+export type InsertExpensifyBudgets = InferInsertModel<typeof expBudgets>;
+export type SelectExpensifyBudgets = InferSelectModel<typeof expBudgets>;

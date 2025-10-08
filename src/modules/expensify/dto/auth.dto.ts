@@ -66,3 +66,14 @@ export class CreateStarredTransactionDto {
   exp_st_user_id: number;
   exp_st_transaction_id: number;
 }
+export class CreateBudgetDto {
+  exp_bg_user_id: number;
+  exp_bg_category_id: number;
+  exp_bg_amount: number;
+  exp_bg_date: string;
+}
+
+export class UpdateBudgetDto {
+  exp_bg_id: number;
+  exp_bg_amount: number;
+}

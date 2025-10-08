@@ -1,11 +1,12 @@
 import { Inject } from '@nestjs/common';
-import { and, desc, eq, gte, ilike, lt } from 'drizzle-orm';
+import { and, desc, eq, gte, ilike, isNull, lt, or } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
 
 import {
   expBankAccounts,
+  expBudgets,
   expStarredTransactions,
   expTransactionCategories,
   expTransactions,
@@ -295,7 +296,7 @@ export class ExpensifyTransactionsRepository {
         expTransactionCategories,
         eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
       )
-      .orderBy(desc(expTransactions.exp_ts_created_at))
+      .orderBy(desc(expTransactions.exp_ts_created_at), desc(expTransactions.exp_ts_date))
       .where(and(...conditions));
   }
 
@@ -340,5 +341,152 @@ export class ExpensifyTransactionsRepository {
     });
 
     return true;
+  }
+  async getAllTransactionsByCategory(
+    userId: number,
+    args: {
+      startDate?: string;
+      endDate?: string;
+      accountId?: number;
+      transaction_type?: number;
+    },
+  ) {
+    const conditions = [eq(expTransactions.exp_ts_user_id, userId)];
+    if (args.startDate && args.endDate) {
+      conditions.push(
+        gte(expTransactions.exp_ts_date, args.startDate),
+        lt(expTransactions.exp_ts_date, args.endDate),
+      );
+    }
+    if (args.accountId) {
+      conditions.push(eq(expTransactions.exp_ts_bank_account_id, args.accountId));
+    }
+    if (args.transaction_type) {
+      conditions.push(eq(expTransactions.exp_ts_transaction_type, args.transaction_type));
+    }
+    const transactions = await this.dbObject.db
+      .select({
+        exp_ts_id: expTransactions.exp_ts_id,
+        exp_ts_title: expTransactions.exp_ts_title,
+        exp_ts_date: expTransactions.exp_ts_date,
+        exp_ts_note: expTransactions.exp_ts_note,
+        exp_ts_time: expTransactions.exp_ts_time,
+        exp_ts_amount: expTransactions.exp_ts_amount,
+        exp_ts_category: expTransactionCategories.exp_tc_label,
+        exp_ts_transaction_type: expTransactionTypes.exp_tt_label,
+        exp_tc_id: expTransactionCategories.exp_tc_id,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
+        exp_tt_id: expTransactionTypes.exp_tt_id,
+        exp_ba_id: expBankAccounts.exp_ba_id,
+        exp_ba_name: expBankAccounts.exp_ba_name,
+      })
+      .from(expTransactions)
+      .innerJoin(
+        expTransactionTypes,
+        eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
+      )
+      .innerJoin(
+        expBankAccounts,
+        eq(expTransactions.exp_ts_bank_account_id, expBankAccounts.exp_ba_id),
+      )
+      .innerJoin(
+        expTransactionCategories,
+        eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
+      )
+      .orderBy(desc(expTransactions.exp_ts_created_at), desc(expTransactions.exp_ts_date))
+      .where(and(...conditions));
+
+    const budgets = await this.dbObject.db
+      .select({
+        exp_bg_id: expBudgets.exp_bg_id,
+        exp_bg_category_id: expBudgets.exp_bg_category_id,
+        exp_bg_amount: expBudgets.exp_bg_amount,
+      })
+      .from(expBudgets)
+      .where(
+        and(
+          eq(expBudgets.exp_bg_user_id, userId),
+          gte(expBudgets.exp_bg_date, args.startDate),
+          lt(expBudgets.exp_bg_date, args.endDate),
+        ),
+      );
+    const allCategories = await this.dbObject.db
+      .select({
+        exp_tc_id: expTransactionCategories.exp_tc_id,
+        exp_tc_label: expTransactionCategories.exp_tc_label,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
+      })
+      .from(expTransactionCategories)
+      .where(
+        and(
+          or(
+            eq(expTransactionCategories.exp_tc_user_id, userId),
+            isNull(expTransactionCategories.exp_tc_user_id),
+          ),
+          eq(expTransactionCategories.exp_tc_transaction_type, 1),
+        ),
+      );
+
+    const budgetMap = budgets.reduce(
+      (acc, b) => {
+        if (b.exp_bg_category_id) {
+          acc[b.exp_bg_category_id] = {
+            exp_bg_id: b.exp_bg_id,
+            exp_bg_amount: parseFloat(b.exp_bg_amount),
+          };
+        }
+        return acc;
+      },
+      {} as Record<number, { exp_bg_id: number; exp_bg_amount: number }>,
+    );
+    const transactionGroups = transactions.reduce(
+      (acc, item) => {
+        const categoryId = item.exp_tc_id;
+        if (!acc[categoryId]) {
+          acc[categoryId] = {
+            totalAmount: 0,
+            transactionCount: 0,
+            transactions: [],
+          };
+        }
+
+        const amount = parseFloat(item.exp_ts_amount) || 0;
+        acc[categoryId].totalAmount += amount;
+        acc[categoryId].transactionCount += 1;
+        acc[categoryId].transactions.push(item);
+
+        return acc;
+      },
+      {} as Record<number, { totalAmount: number; transactionCount: number; transactions: any[] }>,
+    );
+
+    const result = allCategories.map((cat) => {
+      const txGroup = transactionGroups[cat.exp_tc_id];
+      const budget = budgetMap[cat.exp_tc_id];
+
+      const totalAmount = txGroup?.totalAmount || 0;
+      const transactionCount = txGroup?.transactionCount || 0;
+      const transactions = txGroup?.transactions || [];
+
+      const budgetAmount = budget ? budget.exp_bg_amount : 0;
+      const remainingBudget = budgetAmount - totalAmount;
+
+      return {
+        categoryId: cat.exp_tc_id,
+        category: cat.exp_tc_label,
+        icon: cat.exp_tc_icon,
+        iconBg: cat.exp_tc_icon_bg_color,
+        transactions,
+        totalAmount,
+        transactionCount,
+        exp_bg_id: budget ? budget.exp_bg_id : null,
+        budgetAmount,
+        remainingBudget,
+      };
+    });
+
+    return result;
   }
 }

@@ -162,6 +162,27 @@
       "when": 1754927579970,
       "tag": "0022_green_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1759802633410,
+      "tag": "0023_youthful_wraith",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1759848072173,
+      "tag": "0024_careful_mach_iv",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1759900445441,
+      "tag": "0025_empty_selene",
+      "breakpoints": true
     }
   ]
 }
