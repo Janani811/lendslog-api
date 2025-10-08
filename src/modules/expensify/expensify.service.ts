@@ -44,13 +44,20 @@ export class ExpensifyService {
     }
 
     try {
-      await this.usersRepository.createUser({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [data, ...other] = await this.usersRepository.createUser({
         exp_us_name: dto.name,
         exp_us_phone_no: dto.phone,
         exp_us_email: dto.email,
         exp_us_clerk_id: dto.id,
       });
-      return;
+      await this.expensifyBankAccountRepository.createBankAccount({
+        exp_ba_name: 'Main Account',
+        exp_ba_balance: '0',
+        exp_ba_user_id: data.exp_us_id,
+        exp_ba_icon: 'account-balance'
+      })
+      return true;
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.BAD_REQUEST);
     }
