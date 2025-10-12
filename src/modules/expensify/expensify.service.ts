@@ -98,6 +98,7 @@ export class ExpensifyService {
       endDate?: string;
       transaction_type?: number;
       transaction_label?: string;
+      accountId?: number;
     },
   ) {
     return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
