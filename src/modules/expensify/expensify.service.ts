@@ -40,7 +40,7 @@ export class ExpensifyService {
     const existUser = await this.usersRepository.getOne({ id: dto.id });
 
     if (existUser) {
-      throw new HttpException('Your phone number already exists', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Your email already exists', HttpStatus.BAD_REQUEST);
     }
 
     try {
