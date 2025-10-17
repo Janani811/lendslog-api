@@ -63,42 +63,62 @@ export class ExpensifyTransactionsRepository {
   async createTransaction(data: TransactionDto) {
     const isStarred = data.exp_st_id;
     delete data.exp_st_id;
-    const selectedAcc = await this.dbObject.db.query.expBankAccounts.findFirst({
-      where: (expBankAccounts, { eq }) => {
-        return and(
-          eq(expBankAccounts.exp_ba_id, data.exp_ts_bank_account_id),
-          eq(expBankAccounts.exp_ba_is_active, 1),
-        );
-      },
-    });
-    if (!selectedAcc) {
-      throw new Error('Your bank account not active');
-    }
-    const transaction = data as unknown as InsertExpensifyTransactions;
 
+    const selectedAcc = await this.dbObject.db.query.expBankAccounts.findFirst({
+      where: (expBankAccounts, { eq, and }) =>
+        and(
+          eq(expBankAccounts.exp_ba_id, data.exp_ts_bank_account_id),
+          eq(expBankAccounts.exp_ba_user_id, data.exp_ts_user_id),
+          eq(expBankAccounts.exp_ba_is_active, 1),
+        ),
+    });
+
+    if (!selectedAcc) {
+      throw new Error('The selected bank account is not active or not found');
+    }
+
+    // Step 2: Parse amount and balances
     const currentBalance = parseFloat(selectedAcc.exp_ba_balance) || 0;
     const transactionAmount = parseFloat(data.exp_ts_amount) || 0;
 
-    const amount =
-      data.exp_tt_id === 1
-        ? currentBalance - transactionAmount
-        : currentBalance + transactionAmount;
+    if (isNaN(transactionAmount)) {
+      throw new Error('Invalid transaction amount');
+    }
+
+    // Step 3: Compute new balance based on transaction type
+    let newBalance = currentBalance;
+
+    if (data.exp_tt_id === 1) {
+      newBalance = currentBalance - transactionAmount;
+    } else if (data.exp_tt_id === 2) {
+      newBalance = currentBalance + transactionAmount;
+    } else {
+      throw new Error('Invalid transaction type');
+    }
+
+    // Step 4: Update the bank account balance
     await this.dbObject.db
       .update(expBankAccounts)
       .set({
-        exp_ba_balance: amount.toFixed(2),
+        exp_ba_balance: newBalance.toFixed(2),
       })
-      .where(eq(expBankAccounts.exp_ba_id, selectedAcc.exp_ba_id))
-      .returning();
+      .where(eq(expBankAccounts.exp_ba_id, selectedAcc.exp_ba_id));
 
+    // Step 5: Insert the transaction record
+    const transaction = data as unknown as InsertExpensifyTransactions;
     const [row] = await this.dbObject.db.insert(expTransactions).values(transaction).returning();
+
+    // Step 6: Star the transaction if required
     if (isStarred) {
       await this.expStarredTransactionsRepository.starTransaction({
         exp_st_user_id: transaction.exp_ts_user_id,
         exp_st_transaction_id: row.exp_ts_id,
       });
     }
+
+    return row;
   }
+
   async save(transactions: InsertExpensifyTransactions[]) {
     const selectedAcc = await this.dbObject.db.query.expBankAccounts.findFirst({
       where: (expBankAccounts, { eq }) => {
