@@ -625,18 +625,22 @@ export class ExpensifyController {
       const validTypes = ['income', 'expense'];
       if (
         !row[headers['transaction_type']] ||
-        !validTypes.includes(row[headers['transaction_type']].toLowerCase())
+        typeof row[headers['transaction_type']] !== 'string' ||
+        !validTypes.includes(row[headers['transaction_type']]?.toLowerCase())
       ) {
         errors.push('Invalid or missing transaction type');
       }
-      if (validTypes.includes(row[headers['transaction_type']].toLowerCase())) {
+      if (
+        errors.length === 0 &&
+        validTypes.includes(row[headers['transaction_type']]?.toLowerCase())
+      ) {
         category_id = row[headers['transaction_type']]
-          ? row[headers['transaction_type']].toLowerCase() === 'income'
+          ? row[headers['transaction_type']]?.toLowerCase() === 'income'
             ? 12
             : 6
           : null;
         transaction_id = row[headers['transaction_type']]
-          ? row[headers['transaction_type']].toLowerCase() === 'income'
+          ? row[headers['transaction_type']]?.toLowerCase() === 'income'
             ? 2
             : 1
           : null;
