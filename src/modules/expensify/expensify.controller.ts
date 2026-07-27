@@ -31,6 +31,7 @@ import {
   CreateBudgetDto,
   CreateRecurringTransactionDto,
   CreateStarredTransactionDto,
+  ImportRecurringTransactionsDto,
   TransactionDto,
   UpdateBankAccountDto,
   UpdateBudgetDto,
@@ -125,6 +126,46 @@ export class ExpensifyController {
         transaction_label: search ? search : undefined,
         accountId: account ? Number(account) : undefined,
       });
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  @Get('transactions/trend')
+  async getMonthlyTrend(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+        query,
+      } = req;
+      const { months } = query as { months?: string };
+      const data = await this.expensifyService.getMonthlyTrend(
+        exp_us_id,
+        months ? Number(months) : undefined,
+      );
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  @Get('transactions/category-trend')
+  async getCategoryTrend(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+        query,
+      } = req;
+      const { categoryId, months } = query as { categoryId?: string; months?: string };
+      if (!categoryId) {
+        return res.status(400).json({ error: 'categoryId is required' });
+      }
+      const data = await this.expensifyService.getCategoryTrend(
+        exp_us_id,
+        Number(categoryId),
+        months ? Number(months) : undefined,
+      );
       return res.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -273,11 +314,19 @@ export class ExpensifyController {
   }
 
   @Get('accounts/:id')
-  findOne(@Req() req: ExpressWithUser, @Param('id', ParseIntPipe) id: number) {
+  findOne(
+    @Req() req: ExpressWithUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
     const {
       user: { exp_us_id },
     } = req;
-    return this.expensifyService.findAccount(id, exp_us_id);
+    const limitNum = Math.max(Number(limit) || 30, 1);
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const offset = (pageNum - 1) * limitNum;
+    return this.expensifyService.findAccount(id, exp_us_id, limitNum, offset);
   }
 
   @Put('accounts/:id')
@@ -351,7 +400,9 @@ export class ExpensifyController {
 
     const transactions = await this.expensifyService.getAllTransactions(exp_us_id, {
       startDate,
-      endDate,
+      // exp_ts_date filtering is exclusive on the upper bound, so shift by a day
+      // to include transactions dated on endDate itself (e.g. "today").
+      endDate: moment(endDate).add(1, 'day').format('YYYY-MM-DD'),
       transaction_type:
         transaction_type === 'income' ? 2 : transaction_type === 'expense' ? 1 : undefined,
     });
@@ -370,10 +421,10 @@ export class ExpensifyController {
     worksheet.columns = [
       { header: 'No', key: 'id', width: 5 },
       { header: 'Account Name', key: 'account_name', width: 15 },
+      { header: 'Title', key: 'title', width: 20 },
       { header: 'Date', key: 'date', width: 20 },
       { header: 'Category', key: 'category', width: 15 },
       { header: 'Transactions Type', key: 'transactions_type', width: 10 },
-      { header: 'Usage', key: 'title', width: 20 },
       { header: 'Amount', key: 'amount', width: 15 },
     ];
 
@@ -434,7 +485,9 @@ export class ExpensifyController {
 
     const transactions = await this.expensifyService.getAllTransactions(exp_us_id, {
       startDate,
-      endDate,
+      // exp_ts_date filtering is exclusive on the upper bound, so shift by a day
+      // to include transactions dated on endDate itself (e.g. "today").
+      endDate: moment(endDate).add(1, 'day').format('YYYY-MM-DD'),
       transaction_type:
         transaction_type === 'income' ? 2 : transaction_type === 'expense' ? 1 : undefined,
     });
@@ -835,5 +888,26 @@ export class ExpensifyController {
   @Delete('recurring-transaction/:id')
   async deleteRecurringTransaction(@Param('id', ParseIntPipe) id: number) {
     return this.expensifyService.deleteRecurringTransaction(id);
+  }
+
+  @Post('recurring-transactions/import')
+  async importRecurringTransactions(
+    @Body() body: ImportRecurringTransactionsDto,
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      const result = await this.expensifyService.importRecurringTransactions(
+        exp_us_id,
+        body.recurringIds,
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
   }
 }
