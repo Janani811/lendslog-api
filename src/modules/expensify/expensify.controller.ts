@@ -29,10 +29,12 @@ import {
 import {
   CreateBankAccountDto,
   CreateBudgetDto,
+  CreateRecurringTransactionDto,
   CreateStarredTransactionDto,
   TransactionDto,
   UpdateBankAccountDto,
   UpdateBudgetDto,
+  UpdateRecurringTransactionDto,
 } from './dto/auth.dto';
 import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
@@ -780,5 +782,58 @@ export class ExpensifyController {
   @Delete('budget/:id')
   async deleteBudget(@Param('id', ParseIntPipe) id: number) {
     return this.expensifyService.deleteBudget(id);
+  }
+
+  @Get('recurring-transactions')
+  async getRecurringTransactions(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      const data = await this.expensifyService.getRecurringTransactions(exp_us_id);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  @Post('recurring-transaction')
+  async createRecurringTransaction(
+    @Body() dto: CreateRecurringTransactionDto,
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      const {
+        user: { exp_us_id },
+      } = req;
+      dto.exp_rt_user_id = exp_us_id;
+      const data = await this.expensifyService.createRecurringTransaction(dto);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  @Put('recurring-transaction/:id')
+  async updateRecurringTransaction(
+    @Body() dto: UpdateRecurringTransactionDto,
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Express.Response,
+  ) {
+    try {
+      const data = await this.expensifyService.updateRecurringTransaction(id, dto);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  @Delete('recurring-transaction/:id')
+  async deleteRecurringTransaction(@Param('id', ParseIntPipe) id: number) {
+    return this.expensifyService.deleteRecurringTransaction(id);
   }
 }

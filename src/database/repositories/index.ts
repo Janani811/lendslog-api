@@ -11,6 +11,7 @@ import { LendsRepository } from './Lends.repository';
 import { NotificationRepository } from './Notification.repository';
 import { NotificationTokenRepository } from './NotificationToken.repository';
 import { UserRepository } from './User.repository';
+import { RecurringTransactionsRepository } from './RecurringTransactions.repository';
 
 export const repositories = [
   UserRepository,
@@ -26,4 +27,5 @@ export const repositories = [
   ExpensifyNotificationTokenRepository,
   ExpensifyNotificationLogRepository,
   ExpensifyBudgetRepository,
+  RecurringTransactionsRepository,
 ];
