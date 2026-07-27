@@ -399,3 +399,40 @@ export const expBudgets = pgTable('exp_budgets', {
 
 export type InsertExpensifyBudgets = InferInsertModel<typeof expBudgets>;
 export type SelectExpensifyBudgets = InferSelectModel<typeof expBudgets>;
+
+export const expRecurringTransactions = pgTable('exp_recurring_transactions', {
+  exp_rt_id: serial('exp_rt_id').primaryKey(),
+  exp_rt_user_id: integer('exp_rt_user_id')
+    .notNull()
+    .references(() => expensifyUsers.exp_us_id, { onDelete: 'cascade' }),
+  exp_rt_title: text('exp_rt_title').notNull(),
+  exp_rt_amount: text('exp_rt_amount').notNull(),
+  exp_rt_note: text('exp_rt_note'),
+  exp_rt_category_id: integer('exp_rt_category_id')
+    .notNull()
+    .references(() => expTransactionCategories.exp_tc_id),
+  exp_rt_transaction_type_id: integer('exp_rt_transaction_type_id')
+    .notNull()
+    .references(() => expTransactionTypes.exp_tt_id),
+  exp_rt_bank_account_id: integer('exp_rt_bank_account_id')
+    .references(() => expBankAccounts.exp_ba_id, { onDelete: 'set null' })
+    .default(null),
+  exp_rt_frequency: text('exp_rt_frequency').notNull(),
+  exp_rt_start_date: date('exp_rt_start_date').notNull(),
+  exp_rt_end_date: date('exp_rt_end_date'),
+  exp_rt_next_due_date: date('exp_rt_next_due_date').notNull(),
+  exp_rt_is_active: boolean('exp_rt_is_active').notNull().default(true),
+  exp_rt_created_at: timestamp('exp_rt_created_at', { mode: 'string' })
+    .notNull()
+    .default(sql`now()`),
+  exp_rt_updated_at: timestamp('exp_rt_updated_at', { mode: 'string' }).$onUpdate(
+    () => sql`now()`,
+  ),
+});
+
+export type InsertExpensifyRecurringTransactions = InferInsertModel<
+  typeof expRecurringTransactions
+>;
+export type SelectExpensifyRecurringTransactions = InferSelectModel<
+  typeof expRecurringTransactions
+>;

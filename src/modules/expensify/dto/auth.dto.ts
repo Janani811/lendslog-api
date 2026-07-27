@@ -77,3 +77,59 @@ export class UpdateBudgetDto {
   exp_bg_id: number;
   exp_bg_amount: number;
 }
+
+export class CreateRecurringTransactionDto {
+  @IsString()
+  @IsNotEmpty()
+  exp_rt_title!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\d+(\.\d{1,2})?$/, { message: 'Amount must be a valid number string' })
+  exp_rt_amount!: string;
+
+  @IsOptional()
+  @IsString()
+  exp_rt_note?: string | null;
+
+  @IsNumber()
+  exp_rt_category_id!: number;
+
+  @IsNumber()
+  exp_rt_transaction_type_id!: number;
+
+  @IsOptional()
+  @IsNumber()
+  exp_rt_bank_account_id?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  exp_rt_frequency!: 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date must be in YYYY-MM-DD format' })
+  exp_rt_start_date!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date must be in YYYY-MM-DD format' })
+  exp_rt_end_date?: string | null;
+
+  exp_rt_user_id: number;
+  exp_rt_next_due_date: string;
+}
+
+export class UpdateRecurringTransactionDto {
+  exp_rt_title?: string;
+  exp_rt_amount?: string;
+  exp_rt_note?: string | null;
+  exp_rt_category_id?: number;
+  exp_rt_transaction_type_id?: number;
+  exp_rt_bank_account_id?: number;
+  exp_rt_frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  exp_rt_start_date?: string;
+  exp_rt_end_date?: string | null;
+  exp_rt_next_due_date?: string;
+  exp_rt_is_active?: boolean;
+}

@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ExpoPushMessage } from 'expo-server-sdk';
+import moment from 'moment';
 import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
 // import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { NotificationRepository } from 'src/database/repositories/Notification.repository';
 import { UserRepository } from 'src/database/repositories/User.repository';
+import { RecurringTransactionsRepository } from 'src/database/repositories/RecurringTransactions.repository';
 import { ExpensifyNotificationService } from 'src/modules/expensify/expensify-notification.service';
 
 import { NotificationService } from 'src/notification/notification.service';
+
+const RECURRING_FREQUENCY_UNIT: Record<string, moment.unitOfTime.DurationConstructor> = {
+  daily: 'day',
+  weekly: 'week',
+  monthly: 'month',
+  yearly: 'year',
+};
 
 @Injectable()
 export class CronjobsService {
@@ -17,6 +26,7 @@ export class CronjobsService {
     private notificationService: NotificationService,
     private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
     private expensifyNotificationService: ExpensifyNotificationService,
+    private recurringTransactionsRepository: RecurringTransactionsRepository,
   ) {}
   // @Cron('40 2 * * *')
   // async openForBusiness() {
@@ -96,6 +106,54 @@ export class CronjobsService {
         iteration = iteration + 1;
       } while (record.length > 0);
       console.log('********* Send Notifications Completed ********');
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async sendRecurringTransactionReminders() {
+    try {
+      console.log('********* Recurring Transaction Reminders Initiated ********');
+      const today = moment().format('YYYY-MM-DD');
+      const dueRules = await this.recurringTransactionsRepository.getDueRules(today);
+
+      for (const rule of dueRules) {
+        const tokenEntry = await this.expensifyNotificationTokenRepository.getOne({
+          exp_ntto_user_id: rule.exp_rt_user_id,
+        });
+
+        if (tokenEntry) {
+          const message: ExpoPushMessage = {
+            to: tokenEntry.exp_ntto_token,
+            title: 'Recurring transaction due',
+            sound: 'default',
+            body: `${rule.exp_rt_title} - ${rule.exp_rt_amount}`,
+            priority: 'high',
+            data: {
+              type: 'recurring-transaction-due',
+              recurringId: rule.exp_rt_id,
+              title: rule.exp_rt_title,
+              amount: rule.exp_rt_amount,
+              categoryId: rule.exp_rt_category_id,
+              transactionTypeId: rule.exp_rt_transaction_type_id,
+              bankAccountId: rule.exp_rt_bank_account_id,
+            },
+          };
+          await this.expensifyNotificationService.sendNotifications([message]);
+        }
+
+        const nextDueDate = moment(rule.exp_rt_next_due_date)
+          .add(1, RECURRING_FREQUENCY_UNIT[rule.exp_rt_frequency])
+          .format('YYYY-MM-DD');
+        const isPastEndDate = rule.exp_rt_end_date && nextDueDate > rule.exp_rt_end_date;
+
+        await this.recurringTransactionsRepository.update(rule.exp_rt_id, {
+          exp_rt_next_due_date: nextDueDate,
+          exp_rt_is_active: !isPastEndDate,
+        });
+      }
+      console.log('********* Recurring Transaction Reminders Completed ********');
       return true;
     } catch (error) {
       throw error;

@@ -4,10 +4,12 @@ import { Injectable, HttpException, HttpStatus, BadRequestException } from '@nes
 import {
   CreateBankAccountDto,
   CreateBudgetDto,
+  CreateRecurringTransactionDto,
   CreateStarredTransactionDto,
   ExpensifySignUpDto,
   TransactionDto,
   UpdateBudgetDto,
+  UpdateRecurringTransactionDto,
 } from './dto/auth.dto';
 import { ExpensifyUserRepository } from 'src/database/repositories/ExpensifyUser.repository';
 import { ExpensifyTransactionsRepository } from 'src/database/repositories/ExpensifyTransactions.repository';
@@ -23,6 +25,7 @@ import { ExpensifyBankAccountRepository } from 'src/database/repositories/Expens
 import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpStarredTransactions.repository';
 import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
 import { ExpensifyBudgetRepository } from 'src/database/repositories/ExpBudget.repository';
+import { RecurringTransactionsRepository } from 'src/database/repositories/RecurringTransactions.repository';
 
 @Injectable()
 export class ExpensifyService {
@@ -34,6 +37,7 @@ export class ExpensifyService {
     private expStarredTransactionsRepository: ExpStarredTransactionsRepository,
     private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
     private expensifyBudgetRepository: ExpensifyBudgetRepository,
+    private recurringTransactionsRepository: RecurringTransactionsRepository,
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -272,5 +276,19 @@ export class ExpensifyService {
   }
   async deleteBudget(id: number) {
     return await this.expensifyBudgetRepository.removeBudget(id);
+  }
+
+  async getRecurringTransactions(userId: number) {
+    return await this.recurringTransactionsRepository.getAllForUser(userId);
+  }
+  async createRecurringTransaction(dto: CreateRecurringTransactionDto) {
+    dto.exp_rt_next_due_date = dto.exp_rt_start_date;
+    return await this.recurringTransactionsRepository.create(dto);
+  }
+  async updateRecurringTransaction(id: number, dto: UpdateRecurringTransactionDto) {
+    return await this.recurringTransactionsRepository.update(id, dto);
+  }
+  async deleteRecurringTransaction(id: number) {
+    return await this.recurringTransactionsRepository.delete(id);
   }
 }

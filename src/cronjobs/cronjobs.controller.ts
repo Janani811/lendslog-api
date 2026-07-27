@@ -14,13 +14,7 @@ export class CronjobsController {
       // await this.cronjobsService.generateNotifications();
       // await this.cronjobsService.sendNotification();
       // await this.cronjobsService.expensifySendNotification();
-      //TODO: To add cron job in vercel.json need add this
-      // "crons": [
-      //   {
-      //     "path": "/crons",
-      //     "schedule": "0 11 * * *"
-      //   }
-      // ]
+      await this.cronjobsService.sendRecurringTransactionReminders();
       console.log('********* Pending Notification Reminder Completed ********');
     } catch (error) {
       console.error(error);
