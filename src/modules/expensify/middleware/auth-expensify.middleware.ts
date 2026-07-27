@@ -31,33 +31,50 @@ export class AuthExpensifyMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: NextFunction) {
     const authHeaders = req.headers.authorization;
     const bearerToken = authHeaders?.startsWith('Bearer ') ? authHeaders.substring(7) : null;
-    if (bearerToken) {
-      let decoded = null;
-      try {
-        decoded = await verifyToken(bearerToken, {
-          secretKey: this.config.get('EXPENSIFY_CLERK_SECRET_KEY'),
-        });
-      } catch (e) {
-        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      }
+    if (!bearerToken) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
 
-      if (!decoded) {
-        throw new UnauthorizedException('Invalid session');
-      }
+    // Try our own JWT first (new auth system).
+    const user = (await this.tryOwnJwt(bearerToken)) ?? (await this.tryClerkToken(bearerToken));
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid session');
+    }
+    if (user.exp_us_is_deleted) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+
+    (req as any).user = user;
+    req['user'] = user;
+    next();
+  }
+
+  private async tryOwnJwt(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.config.get('EXPENSIFY_JWT_ACCESS_SECRET'),
+      });
+      if (!payload?.exp_us_id) return null;
+      return await this.usersRepository.getOne({ user_id: payload.exp_us_id });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private async tryClerkToken(token: string) {
+    try {
+      const decoded = await verifyToken(token, {
+        secretKey: this.config.get('EXPENSIFY_CLERK_SECRET_KEY'),
+      });
+      if (!decoded) return null;
 
       const clerkUser = await this.clerkClient.users.getUser(decoded.sub);
+      if (!clerkUser) return null;
 
-      if (!clerkUser) {
-        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-      }
-
-      const user = await this.usersRepository.getOne({ id: clerkUser.id });
-      (req as any).user = user;
-
-      req['user'] = user;
-      next();
-    } else {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      return await this.usersRepository.getOne({ id: clerkUser.id });
+    } catch (e) {
+      return null;
     }
   }
 }

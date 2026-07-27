@@ -633,6 +633,50 @@ export class ExpensifyController {
       return res.status(400).json({ error: error.message });
     }
   }
+  @Put('profile')
+  async updateProfile(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() body: { name: string },
+  ) {
+    try {
+      const user = await this.expensifyService.updateName(req.user.exp_us_id, body.name);
+      return res.status(200).json({ ...user });
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ error: error.message });
+    }
+  }
+  @Post('profile/image')
+  async uploadProfileImage(
+    @Req() req: ExpressWithUser,
+    @Res() res: Express.Response,
+    @Body() body: { imageBase64: string },
+  ) {
+    try {
+      if (!body.imageBase64) {
+        return res.status(400).json({ error: 'imageBase64 is required' });
+      }
+      const user = await this.expensifyService.uploadProfileImage(
+        req.user.exp_us_id,
+        body.imageBase64,
+      );
+      return res.status(200).json({ ...user });
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ error: error.message });
+    }
+  }
+  @Delete('profile/image')
+  async removeProfileImage(@Req() req: ExpressWithUser, @Res() res: Express.Response) {
+    try {
+      const user = await this.expensifyService.removeProfileImage(req.user.exp_us_id);
+      return res.status(200).json({ ...user });
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ error: error.message });
+    }
+  }
   @Post('import-data')
   async importExcel(@Body() body: { headers: string[]; data: any }, @Res() res: Express.Response) {
     const { headers, data } = body;

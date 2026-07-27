@@ -200,7 +200,7 @@ export type UpdateNotificationToken = InferSelectModel<typeof notificationToken>
 
 export const expensifyUsers = pgTable('exp_users', {
   exp_us_id: serial('exp_us_id').primaryKey(),
-  exp_us_clerk_id: varchar('exp_us_clerk_id', { length: 255 }).notNull().unique(),
+  exp_us_clerk_id: varchar('exp_us_clerk_id', { length: 255 }).unique(),
   exp_us_name: text('exp_us_name'),
   exp_us_email: text('exp_us_email'),
   exp_us_phone_no: text('exp_phone_no'),
@@ -209,6 +209,15 @@ export const expensifyUsers = pgTable('exp_users', {
   exp_us_default_transaction: integer('exp_us_default_transaction').default(1),
   exp_us_default_grouping: text('exp_us_default_grouping').default('month'),
   exp_us_profile_url: text('exp_us_profile_url'),
+  exp_us_password_hash: text('exp_us_password_hash'),
+  exp_us_email_verified: boolean('exp_us_email_verified').notNull().default(false),
+  exp_us_otp_code_hash: text('exp_us_otp_code_hash'),
+  exp_us_otp_purpose: varchar('exp_us_otp_purpose', { length: 32 }),
+  exp_us_otp_expires_at: timestamp('exp_us_otp_expires_at', {
+    mode: 'string',
+    withTimezone: true,
+  }),
+  exp_us_otp_attempts: integer('exp_us_otp_attempts').notNull().default(0),
   exp_us_created_at: timestamp('exp_us_created_at', { mode: 'string' })
     .notNull()
     .default(sql`now()`),
