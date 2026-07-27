@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import moment from 'moment';
 
 import {
   CreateBankAccountDto,
@@ -107,6 +108,59 @@ export class ExpensifyService {
   ) {
     return await this.expensifyTransactionsRepository.getAllTransactions(id, args);
   }
+  async getMonthlyTrend(userId: number, months = 6) {
+    const startDate = moment()
+      .subtract(months - 1, 'months')
+      .startOf('month')
+      .format('YYYY-MM-DD');
+
+    const rows = await this.expensifyTransactionsRepository.getMonthlyTrend(userId, startDate);
+    const rowsByMonth = new Map(rows.map((row) => [row.month, row]));
+
+    const trend = [];
+    for (let i = months - 1; i >= 0; i--) {
+      const date = moment().subtract(i, 'months');
+      const month = date.format('YYYY-MM');
+      const row = rowsByMonth.get(month);
+
+      trend.push({
+        month,
+        label: date.format('MMM'),
+        income: row ? parseFloat(row.income || '0') : 0,
+        expense: row ? parseFloat(row.expense || '0') : 0,
+      });
+    }
+
+    return trend;
+  }
+  async getCategoryTrend(userId: number, categoryId: number, months = 6) {
+    const startDate = moment()
+      .subtract(months - 1, 'months')
+      .startOf('month')
+      .format('YYYY-MM-DD');
+
+    const rows = await this.expensifyTransactionsRepository.getCategoryTrend(
+      userId,
+      categoryId,
+      startDate,
+    );
+    const rowsByMonth = new Map(rows.map((row) => [row.month, row]));
+
+    const trend = [];
+    for (let i = months - 1; i >= 0; i--) {
+      const date = moment().subtract(i, 'months');
+      const month = date.format('YYYY-MM');
+      const row = rowsByMonth.get(month);
+
+      trend.push({
+        month,
+        label: date.format('MMM'),
+        expense: row ? parseFloat(row.expense || '0') : 0,
+      });
+    }
+
+    return trend;
+  }
   async getTransaction(id) {
     return await this.expensifyTransactionsRepository.getOne(id);
   }
@@ -135,10 +189,12 @@ export class ExpensifyService {
   async findAllAccount(userId: number) {
     return await this.expensifyBankAccountRepository.getAllBankAccount(userId);
   }
-  async findAccount(accountId: number, userId: number) {
+  async findAccount(accountId: number, userId: number, limit: number, offset: number) {
     return await this.expensifyBankAccountRepository.getAccountDetailsWithGroupedTransactionsById(
       accountId,
       userId,
+      limit,
+      offset,
     );
   }
   async updateAccount(id: number, dto: InsertExpensifyBankAccounts) {
@@ -290,5 +346,36 @@ export class ExpensifyService {
   }
   async deleteRecurringTransaction(id: number) {
     return await this.recurringTransactionsRepository.delete(id);
+  }
+
+  async importRecurringTransactions(userId: number, recurringIds: number[]) {
+    const date = moment().format('YYYY-MM-DD');
+    const time = moment().format('HH:mm');
+
+    let imported = 0;
+    for (const recurringId of recurringIds) {
+      const rule = await this.recurringTransactionsRepository.getOne(recurringId);
+      if (!rule || rule.exp_rt_user_id !== userId) {
+        continue;
+      }
+      console.log(rule);
+
+      await this.createTransaction({
+        exp_ts_title: rule.exp_rt_title,
+        exp_ts_amount: rule.exp_rt_amount,
+        exp_ts_note: rule.exp_rt_note,
+        exp_ts_date: date,
+        exp_ts_time: time,
+        exp_tc_id: rule.exp_rt_category_id,
+        exp_tt_id: rule.exp_rt_transaction_type_id,
+        exp_ts_category: rule.exp_rt_category_id,
+        exp_ts_transaction_type: rule.exp_rt_transaction_type_id,
+        exp_ts_user_id: userId,
+        exp_ts_bank_account_id: rule.exp_rt_bank_account_id,
+      } as unknown as TransactionDto);
+      imported += 1;
+    }
+
+    return { imported };
   }
 }

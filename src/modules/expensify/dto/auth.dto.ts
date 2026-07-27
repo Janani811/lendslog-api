@@ -120,6 +120,10 @@ export class CreateRecurringTransactionDto {
   exp_rt_next_due_date: string;
 }
 
+export class ImportRecurringTransactionsDto {
+  recurringIds: number[];
+}
+
 export class UpdateRecurringTransactionDto {
   exp_rt_title?: string;
   exp_rt_amount?: string;

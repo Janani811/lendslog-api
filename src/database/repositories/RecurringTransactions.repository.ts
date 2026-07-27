@@ -1,5 +1,5 @@
 import { Inject, NotFoundException } from '@nestjs/common';
-import { and, asc, eq, gte, isNull, lte, or } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, or } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -96,7 +96,7 @@ export class RecurringTransactionsRepository {
     return { message: 'Recurring transaction removed' };
   }
 
-  async getDueRules(today: string) {
+  async getActiveRules(today: string) {
     return await this.dbObject.db
       .select({
         exp_rt_id: expRecurringTransactions.exp_rt_id,
@@ -114,7 +114,6 @@ export class RecurringTransactionsRepository {
       .where(
         and(
           eq(expRecurringTransactions.exp_rt_is_active, true),
-          lte(expRecurringTransactions.exp_rt_next_due_date, today),
           or(
             isNull(expRecurringTransactions.exp_rt_end_date),
             gte(expRecurringTransactions.exp_rt_end_date, today),

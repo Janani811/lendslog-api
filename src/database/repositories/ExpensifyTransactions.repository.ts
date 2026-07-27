@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { and, desc, eq, gte, ilike, isNull, lt, or } from 'drizzle-orm';
+import { and, desc, eq, gte, ilike, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { DB } from '../database.constants';
 import { Database } from '../types/Database';
@@ -320,6 +320,56 @@ export class ExpensifyTransactionsRepository {
       .where(and(...conditions));
   }
 
+  // Dedicated paginated query for a single account's transaction history (used by
+  // the account detail screen's infinite scroll) - kept separate from
+  // getAllTransactions above so that method's unpaginated callers are unaffected.
+  async getPaginatedTransactionsForAccount(
+    userId: number,
+    accountId: number,
+    limit: number,
+    offset: number,
+  ) {
+    return await this.dbObject.db
+      .select({
+        exp_ts_id: expTransactions.exp_ts_id,
+        exp_ts_title: expTransactions.exp_ts_title,
+        exp_ts_date: expTransactions.exp_ts_date,
+        exp_ts_note: expTransactions.exp_ts_note,
+        exp_ts_time: expTransactions.exp_ts_time,
+        exp_ts_amount: expTransactions.exp_ts_amount,
+        exp_ts_category: expTransactionCategories.exp_tc_label,
+        exp_ts_transaction_type: expTransactionTypes.exp_tt_label,
+        exp_tc_id: expTransactionCategories.exp_tc_id,
+        exp_tc_icon: expTransactionCategories.exp_tc_icon,
+        exp_tc_icon_bg_color: expTransactionCategories.exp_tc_icon_bg_color,
+        exp_tt_id: expTransactionTypes.exp_tt_id,
+        exp_ba_id: expBankAccounts.exp_ba_id,
+        exp_ba_name: expBankAccounts.exp_ba_name,
+      })
+      .from(expTransactions)
+      .innerJoin(
+        expTransactionTypes,
+        eq(expTransactions.exp_ts_transaction_type, expTransactionTypes.exp_tt_id),
+      )
+      .innerJoin(
+        expBankAccounts,
+        eq(expTransactions.exp_ts_bank_account_id, expBankAccounts.exp_ba_id),
+      )
+      .innerJoin(
+        expTransactionCategories,
+        eq(expTransactions.exp_ts_category, expTransactionCategories.exp_tc_id),
+      )
+      .where(
+        and(
+          eq(expTransactions.exp_ts_user_id, userId),
+          eq(expTransactions.exp_ts_bank_account_id, accountId),
+        ),
+      )
+      .orderBy(desc(expTransactions.exp_ts_date), desc(expTransactions.exp_ts_created_at))
+      .limit(limit)
+      .offset(offset);
+  }
+
   async deleteTransaction(id: number) {
     const existingTransaction = await this.dbObject.db.query.expTransactions.findFirst({
       where: (expTransactions, { eq }) => eq(expTransactions.exp_ts_id, id),
@@ -508,5 +558,37 @@ export class ExpensifyTransactionsRepository {
     });
 
     return result;
+  }
+
+  async getMonthlyTrend(userId: number, startDate: string) {
+    const results = await this.dbObject.db.execute(sql`
+      SELECT
+        to_char(exp_ts_date, 'YYYY-MM') as month,
+        SUM(exp_ts_amount::numeric) FILTER (WHERE exp_ts_transaction_type = 2) as income,
+        SUM(exp_ts_amount::numeric) FILTER (WHERE exp_ts_transaction_type = 1) as expense
+      FROM exp_transactions
+      WHERE exp_ts_user_id = ${userId} AND exp_ts_date >= ${startDate}
+      GROUP BY month
+      ORDER BY month
+    `);
+
+    return results.rows as unknown as { month: string; income: string | null; expense: string | null }[];
+  }
+
+  async getCategoryTrend(userId: number, categoryId: number, startDate: string) {
+    const results = await this.dbObject.db.execute(sql`
+      SELECT
+        to_char(exp_ts_date, 'YYYY-MM') as month,
+        SUM(exp_ts_amount::numeric) as expense
+      FROM exp_transactions
+      WHERE exp_ts_user_id = ${userId}
+        AND exp_ts_category = ${categoryId}
+        AND exp_ts_transaction_type = 1
+        AND exp_ts_date >= ${startDate}
+      GROUP BY month
+      ORDER BY month
+    `);
+
+    return results.rows as unknown as { month: string; expense: string | null }[];
   }
 }

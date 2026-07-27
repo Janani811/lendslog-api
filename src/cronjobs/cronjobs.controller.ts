@@ -14,8 +14,18 @@ export class CronjobsController {
       // await this.cronjobsService.generateNotifications();
       // await this.cronjobsService.sendNotification();
       // await this.cronjobsService.expensifySendNotification();
-      await this.cronjobsService.sendRecurringTransactionReminders();
       console.log('********* Pending Notification Reminder Completed ********');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @Get('recurring-transactions')
+  async runRecurringTransactionsCron() {
+    try {
+      console.log('********* Recurring Transaction Reminder Cron Initiated ********');
+      await this.cronjobsService.sendRecurringTransactionReminders();
+      console.log('********* Recurring Transaction Reminder Cron Completed ********');
     } catch (error) {
       console.error(error);
     }

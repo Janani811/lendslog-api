@@ -60,7 +60,12 @@ export class ExpensifyBankAccountRepository {
     });
   }
 
-  async getAccountDetailsWithGroupedTransactionsById(accountId: number, userId: number) {
+  async getAccountDetailsWithGroupedTransactionsById(
+    accountId: number,
+    userId: number,
+    limit: number,
+    offset: number,
+  ) {
     const [account] = await this.dbObject.db
       .select()
       .from(expBankAccounts)
@@ -73,9 +78,13 @@ export class ExpensifyBankAccountRepository {
       throw new Error('Account not found or access denied.');
     }
 
-    const transactions = await this.expensifyTransactionsRepository.getAllTransactions(userId, {
-      accountId,
-    });
+    const transactions =
+      await this.expensifyTransactionsRepository.getPaginatedTransactionsForAccount(
+        userId,
+        accountId,
+        limit,
+        offset,
+      );
 
     const groupMap: Record<
       string,
@@ -125,6 +134,7 @@ export class ExpensifyBankAccountRepository {
           new Date(`${a.month} 1, ${a.year}`).getMonth()
         );
       }),
+      hasMore: transactions.length === limit,
     };
   }
 }
