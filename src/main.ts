@@ -9,13 +9,27 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
-  firebase.initializeApp({
-    credential: firebase.credential.cert(serviceAccount),
-    // credential: firebase.credential.cert(
-    //   path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
-    // ),
-  });
+  // const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
+  // firebase.initializeApp({
+  //   credential: firebase.credential.cert(serviceAccount),
+  // credential: firebase.credential.cert(
+  //   path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
+  // ),
+  // });
+
+  // Separate Firebase project used for profile image storage.
+  if (process.env.FIREBASE_STORAGE_SERVICE_ACCOUNT_KEY) {
+    const storageServiceAccount = JSON.parse(
+      process.env.FIREBASE_STORAGE_SERVICE_ACCOUNT_KEY as string,
+    );
+    firebase.initializeApp(
+      {
+        credential: firebase.credential.cert(storageServiceAccount),
+        storageBucket: (process.env.FIREBASE_STORAGE_BUCKET || '').replace(/^gs:\/\//, ''),
+      },
+      'storage',
+    );
+  }
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
