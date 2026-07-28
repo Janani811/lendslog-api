@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 
 import { DatabaseModule } from '../database/database.module';
 
@@ -16,6 +16,7 @@ export class NotificationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware) // middleware
+      .exclude({ path: 'notifications/test-send', method: RequestMethod.POST })
       .forRoutes(NotificationController);
   }
 }

@@ -47,6 +47,21 @@ export class ExpensifyNotificationTokenRepository {
       .returning();
   }
 
+  async disableByToken(token: string) {
+    return await this.dbObject.db
+      .update(expNotificationToken)
+      .set({ exp_ntto_status: 0 })
+      .where(eq(expNotificationToken.exp_ntto_token, token))
+      .returning();
+  }
+
+  async deleteStale() {
+    return await this.dbObject.db
+      .delete(expNotificationToken)
+      .where(eq(expNotificationToken.exp_ntto_status, 0))
+      .returning();
+  }
+
   async getOne(args: Partial<SelectExpensifyNotificationToken>) {
     const conditions = [];
     Object.keys(args).map((item: keyof InsertExpensifyNotificationToken) => {

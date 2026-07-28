@@ -27,6 +27,7 @@ import { ExpStarredTransactionsRepository } from 'src/database/repositories/ExpS
 import { ExpensifyNotificationTokenRepository } from 'src/database/repositories/ExpensifyNotificationToken.repository';
 import { ExpensifyBudgetRepository } from 'src/database/repositories/ExpBudget.repository';
 import { RecurringTransactionsRepository } from 'src/database/repositories/RecurringTransactions.repository';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class ExpensifyService {
@@ -39,6 +40,7 @@ export class ExpensifyService {
     private expensifyNotificationTokenRepository: ExpensifyNotificationTokenRepository,
     private expensifyBudgetRepository: ExpensifyBudgetRepository,
     private recurringTransactionsRepository: RecurringTransactionsRepository,
+    private storageService: StorageService,
   ) {}
 
   async signup(dto: ExpensifySignUpDto) {
@@ -299,10 +301,36 @@ export class ExpensifyService {
       user.reminder_status = notificationTokenEntry?.exp_ntto_status;
       user.reminder_time = notificationTokenEntry?.exp_ntto_time;
 
+      delete (user as any).exp_us_password_hash;
+      delete (user as any).exp_us_otp_code_hash;
+      delete (user as any).exp_us_otp_purpose;
+      delete (user as any).exp_us_otp_expires_at;
+      delete (user as any).exp_us_otp_attempts;
+
       return user;
     } catch (e) {
       throw new BadRequestException(e);
     }
+  }
+
+  async updateName(id: number, name: string) {
+    await this.usersRepository.updateUser({ exp_us_name: name }, { exp_user_id: id });
+    return this.fetchProfile(id);
+  }
+
+  async uploadProfileImage(id: number, imageBase64: string) {
+    const profileUrl = await this.storageService.uploadProfileImage(id, imageBase64);
+    await this.usersRepository.updateUser({ exp_us_profile_url: profileUrl }, { exp_user_id: id });
+    return this.fetchProfile(id);
+  }
+
+  async removeProfileImage(id: number) {
+    const user = await this.usersRepository.getOne({ user_id: id });
+    if (user?.exp_us_profile_url) {
+      await this.storageService.deleteProfileImage(user.exp_us_profile_url);
+    }
+    await this.usersRepository.updateUser({ exp_us_profile_url: null }, { exp_user_id: id });
+    return this.fetchProfile(id);
   }
   async bulkTransactions(transactions: InsertExpensifyTransactions[]) {
     try {

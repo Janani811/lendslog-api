@@ -37,4 +37,5 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-firebase-adminsdk.json
+*firebase-adminsdk*.json
+*service*.json
