@@ -23,7 +23,7 @@ import { ExpensifyAuthService } from './auth/expensify-auth.service';
     ExpensifyNotificationService,
     ExpensifyAuthService,
   ],
-  exports: [ExpensifyService, AuthExpensifyMiddleware],
+  exports: [ExpensifyService, AuthExpensifyMiddleware, ExpensifyNotificationService],
 })
 export class ExpensifyModule implements NestModule {
   constructor(private config: ConfigService) {}
