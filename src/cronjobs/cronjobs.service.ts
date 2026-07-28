@@ -115,6 +115,10 @@ export class CronjobsService {
   async sendRecurringTransactionReminders() {
     try {
       console.log('********* Recurring Transaction Reminders Initiated ********');
+
+      const removedTokens = await this.expensifyNotificationTokenRepository.deleteStale();
+      console.log(`********* Removed ${removedTokens.length} stale notification tokens ********`);
+
       const today = moment().format('YYYY-MM-DD');
       const activeRules = await this.recurringTransactionsRepository.getActiveRules(today);
 

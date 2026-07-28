@@ -15,15 +15,5 @@
           "Access-Control-Allow-Origin": "*"
         }
       }
-    ],
-    "crons": [
-      {
-        "path": "/crons",
-        "schedule": "0 11 * * *"
-      },
-      {
-        "path": "/crons/recurring-transactions",
-        "schedule": "0 0 1 * *"
-      }
     ]
   }
